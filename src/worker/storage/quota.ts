@@ -1,4 +1,4 @@
-/** Whipsr — Storage Quota Durable Object (QuotaLedger)
+/** Whispr — Storage Quota Durable Object (QuotaLedger)
  * PATCH 15: Single-threaded per-user quota enforcement.
  * Eliminates TOCTOU race conditions in storage quota checks.
  * One DO per user — hibernates when inactive.

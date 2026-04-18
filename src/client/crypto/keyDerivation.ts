@@ -1,4 +1,4 @@
-/** Whipsr — Key Derivation
+/** Whispr — Key Derivation
  * Argon2id → master_key derivation with OPRF augmentation (PATCH 09).
  * PATCH 07: Non-extractable CryptoKey import + memory shredding.
  * PATCH 16: Entropy Fusion for key generation.
@@ -135,7 +135,7 @@ export function deriveAuthHash(password: string, salt: string): Uint8Array {
  * Same password + salt → same identity on any device.
  */
 export function deriveIdentitySeed(masterKey: Uint8Array): Uint8Array {
-  return hkdf(sha512, masterKey, undefined, 'whipsr-identity-v1', 32);
+  return hkdf(sha512, masterKey, undefined, 'Whispr-identity-v1', 32);
 }
 
 /**
@@ -165,7 +165,7 @@ export async function importAsNonExtractable(
  * key_bundle is encrypted with this before upload to server.
  */
 export function deriveKeyBundleKey(masterKey: Uint8Array): Uint8Array {
-  return hkdf(sha512, masterKey, undefined, 'whipsr-keybundle-v1', 32);
+  return hkdf(sha512, masterKey, undefined, 'Whispr-keybundle-v1', 32);
 }
 
 /**

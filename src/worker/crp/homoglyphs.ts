@@ -1,4 +1,4 @@
-/** Whipsr — CRP Homoglyph Map
+/** Whispr — CRP Homoglyph Map
  * PATCH 17: Maps visually similar Unicode characters to their ASCII equivalents.
  * Prevents Unicode-based CRP bypass attacks.
  * ~200 character mappings covering Cyrillic, Greek, and other common homoglyphs.

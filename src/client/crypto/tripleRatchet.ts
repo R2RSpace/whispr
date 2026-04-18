@@ -1,4 +1,4 @@
-/** Whipsr — Signal Triple Ratchet (SPQR)
+/** Whispr — Signal Triple Ratchet (SPQR)
  * Implements Signal Protocol Quantum Ratchet with three layers:
  *   Ratchet A: Double Ratchet (X25519, classical)
  *   Ratchet B: ML-KEM-768 ratchet (post-quantum)
@@ -61,8 +61,8 @@ export function initializeRatchet(
   isInitiator: boolean
 ): RatchetState {
   // Derive root keys for both ratchets
-  const rootKeyA = hkdf(sha512, sharedSecret, undefined, 'whipsr-ratchet-a-v1', 32);
-  const rootKeyB = hkdf(sha512, sharedSecret, undefined, 'whipsr-ratchet-b-v1', 32);
+  const rootKeyA = hkdf(sha512, sharedSecret, undefined, 'Whispr-ratchet-a-v1', 32);
+  const rootKeyB = hkdf(sha512, sharedSecret, undefined, 'Whispr-ratchet-b-v1', 32);
 
   // Generate initial DH keypairs
   const dhPriv = crypto.getRandomValues(new Uint8Array(32));
@@ -72,7 +72,7 @@ export function initializeRatchet(
   const kemKeys = ml_kem768.keygen();
 
   // Derive initial chain keys
-  const chainKeys = hkdf(sha512, rootKeyA, undefined, 'whipsr-chains-v1', 64);
+  const chainKeys = hkdf(sha512, rootKeyA, undefined, 'Whispr-chains-v1', 64);
 
   return {
     rootKeyA,
@@ -99,7 +99,7 @@ export function initializeRatchet(
 function dhRatchetStep(state: RatchetState, peerDhPub: Uint8Array): void {
   // Receiving chain
   const dhOutput = x25519.getSharedSecret(state.dhSendPriv, peerDhPub);
-  const newRootAndChain = hkdf(sha512, state.rootKeyA, dhOutput, 'whipsr-dh-ratchet', 64);
+  const newRootAndChain = hkdf(sha512, state.rootKeyA, dhOutput, 'Whispr-dh-ratchet', 64);
   
   state.rootKeyA = newRootAndChain.slice(0, 32);
   state.chainKeyRecv = newRootAndChain.slice(32, 64);
@@ -115,7 +115,7 @@ function dhRatchetStep(state: RatchetState, peerDhPub: Uint8Array): void {
 
   // Sending chain
   const dhOutput2 = x25519.getSharedSecret(state.dhSendPriv, peerDhPub);
-  const newRootAndChain2 = hkdf(sha512, state.rootKeyA, dhOutput2, 'whipsr-dh-ratchet', 64);
+  const newRootAndChain2 = hkdf(sha512, state.rootKeyA, dhOutput2, 'Whispr-dh-ratchet', 64);
   
   state.rootKeyA = newRootAndChain2.slice(0, 32);
   state.chainKeySend = newRootAndChain2.slice(32, 64);
@@ -136,7 +136,7 @@ function kemRatchetStep(
   const { cipherText, sharedSecret: kemShared } = ml_kem768.encapsulate(peerKemPub);
 
   // Update root key B
-  const newRootB = hkdf(sha512, state.rootKeyB, kemShared, 'whipsr-kem-ratchet', 32);
+  const newRootB = hkdf(sha512, state.rootKeyB, kemShared, 'Whispr-kem-ratchet', 32);
   state.rootKeyB = newRootB;
 
   // Rotate our own KEM keypair
@@ -186,7 +186,7 @@ export function ratchetEncrypt(
   const combined = new Uint8Array(keyA.length + keyB.length);
   combined.set(keyA, 0);
   combined.set(keyB, keyA.length);
-  const messageKey = hkdf(sha512, combined, undefined, 'whipsr-message-v1', 32);
+  const messageKey = hkdf(sha512, combined, undefined, 'Whispr-message-v1', 32);
 
   // Encrypt with AES-256-GCM
   const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -235,7 +235,7 @@ export function ratchetDecrypt(
   let keyB = state.rootKeyB;
   if (header.kemCiphertext.length > 0) {
     const kemShared = ml_kem768.decapsulate(header.kemCiphertext, state.kemSendSk);
-    const newRootB = hkdf(sha512, state.rootKeyB, kemShared, 'whipsr-kem-ratchet', 32);
+    const newRootB = hkdf(sha512, state.rootKeyB, kemShared, 'Whispr-kem-ratchet', 32);
     state.rootKeyB = newRootB;
     keyB = newRootB;
 
@@ -248,7 +248,7 @@ export function ratchetDecrypt(
   const combined = new Uint8Array(keyA.length + keyB.length);
   combined.set(keyA, 0);
   combined.set(keyB, keyA.length);
-  const messageKey = hkdf(sha512, combined, undefined, 'whipsr-message-v1', 32);
+  const messageKey = hkdf(sha512, combined, undefined, 'Whispr-message-v1', 32);
 
   // Update Lamport clock (PATCH 14)
   state.lamportClock = Math.max(state.lamportClock, header.lamportSeq) + 1;

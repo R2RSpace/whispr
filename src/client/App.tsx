@@ -121,7 +121,7 @@ function EmptyState() {
       opacity: 0.6,
     }}>
       <div style={{ fontSize: 64 }}>🛡️</div>
-      <h2 style={{ fontSize: 24, fontWeight: 400 }}>Whipsr</h2>
+      <h2 style={{ fontSize: 24, fontWeight: 400 }}>Whispr</h2>
       <p style={{ fontSize: 14, maxWidth: 400, textAlign: 'center', lineHeight: 1.6 }}>
         Constitutional secure messaging. Select a conversation or start a new one.
         Every message is reviewed by the Constitutional AI layer.

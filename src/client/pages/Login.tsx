@@ -315,7 +315,7 @@ export default function Login() {
               🛡️
             </div>
             <h1 style={{ fontSize: 28, fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--md-sys-color-on-surface)' }}>
-              Whipsr
+              Whispr
             </h1>
             <p style={{ fontSize: 13, color: 'var(--md-sys-color-on-surface-variant)', marginTop: 4 }}>
               Constitutional Secure Messaging
@@ -421,7 +421,7 @@ export default function Login() {
 
           {/* Security badges */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
-            {['E2EE', 'Post-Quantum', 'Zero-Knowledge'].map(label => (
+            {['Decentralized', 'Signal Protocol', 'Serverless'].map(label => (
               <span key={label} style={{
                 padding: '3px 10px',
                 borderRadius: 20,

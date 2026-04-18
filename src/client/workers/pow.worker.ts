@@ -1,4 +1,4 @@
-/** Whipsr — PoW Web Worker
+/** Whispr — PoW Web Worker
  * PATCH 06: Solves Proof-of-Work challenges in background.
  * SHA-256 nonce search — finds value where hash starts with N zeros.
  * Runs in Web Worker to avoid blocking UI (~3-5 seconds on average).

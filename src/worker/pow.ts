@@ -1,4 +1,4 @@
-/** Whipsr — Proof-of-Work Challenge System
+/** Whispr — Proof-of-Work Challenge System
  * PATCH 06: Anti-botnet admission control.
  * Protects registration, WebSocket connections, and conversation creation.
  * SHA-256 based PoW with configurable difficulty.

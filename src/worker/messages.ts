@@ -1,4 +1,4 @@
-/** Whipsr — Messages API
+/** Whispr — Messages API
  * PATCH 08: Mailbox-based routing (no social graph on server)
  * PATCH 01: No crp_metadata column — CRP flags inside E2EE payload
  * PATCH 14: Epoch blocks instead of precise timestamps

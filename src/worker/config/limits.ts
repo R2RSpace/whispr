@@ -1,4 +1,4 @@
-/** Whipsr — Global Safe Storage Limits
+/** Whispr — Global Safe Storage Limits
  * 90% of Cloudflare free tier to prevent service disruption.
  * These constants are the single source of truth for all quota checks.
  */

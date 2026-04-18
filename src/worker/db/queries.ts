@@ -1,4 +1,4 @@
-/** Whipsr — D1 Query Helpers
+/** Whispr — D1 Query Helpers
  * Typed query functions for all database tables.
  * All queries respect blind server constraints.
  */

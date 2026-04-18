@@ -1,4 +1,4 @@
-/** Whipsr — Security Headers Middleware
+/** Whispr — Security Headers Middleware
  * Implements all 8 required headers for A+ security rating.
  * Applied as Hono middleware on every response.
  */

@@ -1,4 +1,4 @@
-/** Whipsr — PQXDH Key Exchange
+/** Whispr — PQXDH Key Exchange
  * Implements PQXDH = X25519 + ML-KEM-768 hybrid key exchange.
  * Per Signal spec + ML-KEM-768 for post-quantum security.
  * PATCH 08: Generates mailbox IDs during handshake.
@@ -96,7 +96,7 @@ export function pqxdhInitiate(
   combined.set(kyberShared, dh1.length + dh2.length + dh3.length);
 
   // Final key: HKDF-SHA512(combined) → 32 bytes
-  const sharedSecret = hkdf(sha512, combined, undefined, 'whipsr-pqxdh-v1', 32);
+  const sharedSecret = hkdf(sha512, combined, undefined, 'Whispr-pqxdh-v1', 32);
 
   // Shred intermediate secrets (PATCH 07)
   shred(ephemeral.privateKey);
@@ -156,7 +156,7 @@ export function pqxdhRespond(
   combined.set(kyberShared, dh1.length + dh2.length + dh3.length);
 
   // Final key: HKDF-SHA512(combined) → 32 bytes
-  const sharedSecret = hkdf(sha512, combined, undefined, 'whipsr-pqxdh-v1', 32);
+  const sharedSecret = hkdf(sha512, combined, undefined, 'Whispr-pqxdh-v1', 32);
 
   // Shred intermediate secrets (PATCH 07)
   shred(dh1);

@@ -1,4 +1,4 @@
-/** Whipsr — CRP Pipeline
+/** Whispr — CRP Pipeline
  * Constitutional Review Pipeline — runs client-side in crp.worker.ts.
  * PATCH 17: NFKC canonicalization (Step 0) before scoring.
  * PATCH 01: CRP flags embedded in E2EE payload — server never sees them.

@@ -1,4 +1,4 @@
-/** Whipsr — CRP Web Worker
+/** Whispr — CRP Web Worker
  * Runs Constitutional Review Pipeline in a non-blocking Web Worker.
  * PATCH 05: Dual enforcement — both sender and receiver side.
  * PATCH 17: NFKC canonicalization included in pipeline.

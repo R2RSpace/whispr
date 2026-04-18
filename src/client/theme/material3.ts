@@ -1,4 +1,4 @@
-/** Whipsr — Material 3 Theme Configuration
+/** Whispr — Material 3 Theme Configuration
  * Dynamic color seeding, typography, elevation, shape tokens.
  * Uses MD3 design tokens as CSS custom properties.
  */

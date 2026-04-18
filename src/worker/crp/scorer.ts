@@ -1,4 +1,4 @@
-/** Whipsr — CRP Scorer
+/** Whispr — CRP Scorer
  * Evaluates messages against constitutional principles.
  * Uses weighted keyword matching, regex patterns, and TF-IDF cosine similarity.
  * NO external API calls — all processing is local.

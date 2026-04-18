@@ -1,4 +1,4 @@
-/** Whipsr — Constitution API
+/** Whispr — Constitution API
  * GET /api/constitution — returns constitution.json
  * PUT /api/constitution — admin-only, hot-update
  * Constitution is hot-reloadable: CRP uses new values immediately.

@@ -1,4 +1,4 @@
-/** Whipsr — Credential & Identity Rotation
+/** Whispr — Credential & Identity Rotation
  * Layer 1: Password/username rotation (atomic D1 transaction)
  * Layer 2: Identity key rotation (with key_log per PATCH 04)
  * Layer 3: Account migration (transfer cert broadcast)

@@ -1,4 +1,4 @@
--- Whipsr Database Schema (Cloudflare D1 / SQLite)
+-- Whispr Database Schema (Cloudflare D1 / SQLite)
 -- Amended by PATCH 08 (mailboxes), PATCH 14 (epoch blocks), PATCH 04 (key_log)
 -- PATCH 01: crp_metadata removed from messages (blind server)
 

@@ -1,4 +1,4 @@
-/** Whipsr — Storage Cleanup Cron Trigger
+/** Whispr — Storage Cleanup Cron Trigger
  * Runs daily at 02:00 UTC.
  * Flags media not accessed in 90 days, deletes after 14-day grace period.
  * Messages are NEVER auto-deleted.

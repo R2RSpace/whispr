@@ -1,4 +1,4 @@
-/** Whipsr — Blind Server Middleware
+/** Whispr — Blind Server Middleware
  * Enforces that the server NEVER sees plaintext message content.
  * Throws if any handler attempts to log or return plaintext.
  * Per Section 2.5 + PATCH 01: CRP flags are inside E2EE payload.

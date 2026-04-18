@@ -1,4 +1,4 @@
-/** Whipsr — Authentication Routes
+/** Whispr — Authentication Routes
  * Handles registration, login, salt retrieval.
  * PATCH 02: Device fingerprint via crypto keypair
  * PATCH 06: PoW required for registration
@@ -31,7 +31,7 @@ authRoutes.get('/salt/:username', async (c) => {
   if (!user) {
     // Return a deterministic fake salt to prevent username enumeration
     const encoder = new TextEncoder();
-    const data = encoder.encode(username + 'whipsr-salt-padding');
+    const data = encoder.encode(username + 'Whispr-salt-padding');
     const hash = await crypto.subtle.digest('SHA-256', data);
     const fakeSalt = btoa(String.fromCharCode(...new Uint8Array(hash).slice(0, 16)));
     return c.json({ argon2_salt: fakeSalt, device_is_new: true, exists: false });

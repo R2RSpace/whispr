@@ -1,4 +1,4 @@
-/** Whipsr — WebSocket Durable Object (ConversationRoom)
+/** Whispr — WebSocket Durable Object (ConversationRoom)
  * Real-time message relay via WebSocket connections.
  * PATCH 08: Keyed by mailbox_id, not conversation_id.
  * PATCH 06: PoW verified on connection upgrade.

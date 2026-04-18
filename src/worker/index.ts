@@ -1,4 +1,4 @@
-/** Whipsr — Main Worker Entry Point
+/** Whispr — Main Worker Entry Point
  * Hono-based Cloudflare Worker with all route registrations.
  * Exports Durable Object classes.
  */
@@ -253,13 +253,13 @@ app.delete('/api/sessions', async (c) => {
 });
 
 // Health check
-app.get('/api/health', (c) => c.json({ status: 'ok', service: 'whipsr' }));
+app.get('/api/health', (c) => c.json({ status: 'ok', service: 'Whispr' }));
 
 // Static file serving (SPA fallback)
 app.get('*', async (c) => {
   // In production, this would serve from R2/static assets
   // For dev, Vite handles this
-  return c.html('<!DOCTYPE html><html><head><title>Whipsr</title></head><body><div id="root"></div></body></html>');
+  return c.html('<!DOCTYPE html><html><head><title>Whispr</title></head><body><div id="root"></div></body></html>');
 });
 
 // --- Cron Trigger ---

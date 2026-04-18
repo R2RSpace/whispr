@@ -1,4 +1,4 @@
-/** Whipsr — Crypto Web Worker
+/** Whispr — Crypto Web Worker
  * PATCH 07: All @noble operations run quarantined in this worker.
  * Worker has CSP: connect-src 'none' (cannot make network requests).
  * Non-extractable key imports + memory shredding enforced.

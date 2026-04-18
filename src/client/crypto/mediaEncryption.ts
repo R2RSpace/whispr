@@ -1,4 +1,4 @@
-/** Whipsr — Media Encryption
+/** Whispr — Media Encryption
  * PATCH 03: Convergent encryption for deduplication
  * PATCH 11: Tiered padding to eliminate size fingerprinting
  * PATCH 19: Ephemeral key wrapping for true deletion
@@ -37,7 +37,7 @@ export function getPaddedSize(originalBytes: number): number {
  */
 function deriveConvergentKey(fileData: Uint8Array): Uint8Array {
   const fileHash = sha256(fileData);
-  return hkdf(sha256, fileHash, 'media-convergent', 'whipsr-media-key-v1', 32);
+  return hkdf(sha256, fileHash, 'media-convergent', 'Whispr-media-key-v1', 32);
 }
 
 /**

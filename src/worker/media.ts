@@ -1,4 +1,4 @@
-/** Whipsr — Media Upload & Management
+/** Whispr — Media Upload & Management
  * PATCH 03: Convergent encryption for dedup
  * PATCH 11: Tiered padding to hide file size
  * PATCH 19: Ephemeral key wrapping for true deletion

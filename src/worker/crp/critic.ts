@@ -1,4 +1,4 @@
-/** Whipsr — CRP Self-Critique Module
+/** Whispr — CRP Self-Critique Module
  * Analyzes scored results to identify which principles are served vs violated.
  * Generates rule-based revision suggestions when appropriate.
  */

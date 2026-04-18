@@ -41,7 +41,7 @@ export default function ChatList() {
         justifyContent: 'space-between',
       }}>
         <h1 style={{ fontSize: 22, fontWeight: 600, color: 'var(--md-sys-color-on-surface)' }}>
-          Whipsr
+          Whispr
         </h1>
         <div style={{ display: 'flex', gap: 4 }}>
           <button

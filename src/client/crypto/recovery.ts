@@ -1,4 +1,4 @@
-/** Whipsr — Recovery Phrase (BIP-39 Mnemonic)
+/** Whispr — Recovery Phrase (BIP-39 Mnemonic)
  * PATCH 12: Dual mnemonic system — real + duress (plausible deniability).
  * Uses @scure/bip39 for BIP-39 compliant mnemonic generation.
  */
@@ -33,7 +33,7 @@ export function generateRecoveryPhrases(): RecoveryPhrases {
 
 /**
  * Derive recovery master key from mnemonic entropy.
- * recovery_master_key = HKDF(mnemonic_entropy, 'whipsr-recovery')
+ * recovery_master_key = HKDF(mnemonic_entropy, 'Whispr-recovery')
  */
 export function deriveRecoveryKey(mnemonic: string): Uint8Array {
   if (!validateMnemonic(mnemonic, wordlist)) {
@@ -42,7 +42,7 @@ export function deriveRecoveryKey(mnemonic: string): Uint8Array {
 
   const entropy = mnemonicToEntropy(mnemonic, wordlist);
   const entropyBytes = hexToBytes(entropy);
-  const recoveryKey = hkdf(sha256, entropyBytes, undefined, 'whipsr-recovery-v1', 32);
+  const recoveryKey = hkdf(sha256, entropyBytes, undefined, 'Whispr-recovery-v1', 32);
 
   shred(entropyBytes);
   return recoveryKey;

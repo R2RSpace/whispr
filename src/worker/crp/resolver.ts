@@ -1,4 +1,4 @@
-/** Whipsr — CRP Conflict Resolver
+/** Whispr — CRP Conflict Resolver
  * resolveConflict() is a PURE FUNCTION with no side effects.
  * Handles 3 documented conflict pairs between constitutional principles.
  * Returns the winning principle based on explicit logic.

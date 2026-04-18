@@ -1,4 +1,4 @@
-/** Whipsr — AES-256-GCM Encrypt/Decrypt
+/** Whispr — AES-256-GCM Encrypt/Decrypt
  * Symmetric encryption for message payloads.
  * 96-bit random nonce per message (never reused).
  * Used as the final layer in the Triple Ratchet output.

@@ -25,16 +25,7 @@ id = "Whispr-kv-id"
 binding = "R2"
 bucket_name = "Whispr-media"
 
-# Durable Objects
-[durable_objects]
-bindings = [
-  { name = "CONVERSATION_ROOM", class_name = "ConversationRoom" },
-  { name = "QUOTA_LEDGER", class_name = "QuotaLedger" }
-]
 
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["ConversationRoom", "QuotaLedger"]
 
 # Cron Triggers
 [triggers]

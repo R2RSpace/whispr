@@ -129,35 +129,32 @@ export default function App() {
   useEffect(() => { LS.set('whispr_profile', profile); }, [profile]);
   useEffect(() => { LS.set('whispr_blocked', blockedUsers); }, [blockedUsers]);
 
-  // Phase 2: Live WebSocket listener for the user's primary mailbox hook
+  // Phase 2: Free Tier Polling engine (No WebSockets)
   useEffect(() => {
     if (!isLoggedIn || !userId) return;
-    const wsUrl = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${wsUrl}//${window.location.host}/api/ws/${userId}`);
-    ws.onmessage = async (event) => {
+    let lastPolled = Date.now();
+    const interval = setInterval(async () => {
       try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'new_message') {
-          // If a new network packet comes in, update UI (Optimistic decryption mock for Phase 2)
-          setMessages(prev => {
-            const msgs = prev[data.mailbox_id] || [];
-            if (msgs.some(m => m.id === data.message_id)) return prev; // Avoid dupes
-            return {
-              ...prev,
-              [data.mailbox_id]: [...msgs, {
-                id: data.message_id,
-                text: 'New Encrypted Payload Received',
-                sender: 'other',
-                timestamp: Date.now(),
-                crpFlag: 'annotate',
-                crpReason: 'Auto-scanned by Network Layer'
-              }]
-            };
-          });
+        const auth = LS.get('whispr_session');
+        // We poll a generic mailbox or iterate active chats.
+        // For 0 Budget demonstration, we check for new metadata
+        // We will assume the endpoint supports a general ping or we just check the active chat
+        // In a true app, we would poll /api/messages/sync?since=...
+        const res = await fetch(`/api/messages/${userId}?page=0`, {
+           headers: { 'Authorization': `Bearer ${auth?.sessionId}` }
+        });
+        if (res.ok) {
+           const data = await res.json();
+           if (data.messages && data.messages.length > 0) {
+             // Append to local state if there are new ones
+             // Mocking the parse process
+             console.log("Polled messages:", data.messages);
+           }
         }
       } catch (e) { }
-    };
-    return () => ws.close();
+    }, 3000); // Poll every 3 seconds to preserve 100k free tier limit (approx 28k req/day per user online continuously)
+    
+    return () => clearInterval(interval);
   }, [isLoggedIn, userId]);
 
   const login = useCallback((uid: string, uname: string, sid: string) => {

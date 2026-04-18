@@ -16,18 +16,27 @@ export default function VoiceCall({ contactName, onEnd, isInitiator = true }: Pr
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
+  const authHeader = `Bearer ${JSON.parse(localStorage.getItem('whispr_session') || '{}')?.sessionId}`;
+  const channelId = `call_${contactName.replace(/\s/g, '_')}`;
+
+  const sendSignal = async (payload: any) => {
+    fetch(`/api/webrtc/${channelId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+      body: JSON.stringify(payload)
+    }).catch(e => console.error("Signaling POST failed", e));
+  };
 
   useEffect(() => {
     // 1. Initialize Audio
     remoteAudioRef.current = new Audio();
     remoteAudioRef.current.autoplay = true;
 
-    // 2. Initialize WebSocket Signaling
-    const ws = new WebSocket(`ws://${window.location.host}/api/ws/webrtc-signaling`);
-    wsRef.current = ws;
+    // 2. Initialize KV Polling Signaling
+    let lastPoll = Date.now();
+    let pollInterval: any = null;
 
-    ws.onopen = async () => {
+    const initCall = async () => {
       try {
         // Request Microphone Access
         localStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -54,7 +63,7 @@ export default function VoiceCall({ contactName, onEnd, isInitiator = true }: Pr
         // ICE Candidate handling
         pc.onicecandidate = (event) => {
           if (event.candidate) {
-            ws.send(JSON.stringify({ type: 'candidate', candidate: event.candidate }));
+            sendSignal({ type: 'candidate', candidate: event.candidate });
           }
         };
 
@@ -63,39 +72,53 @@ export default function VoiceCall({ contactName, onEnd, isInitiator = true }: Pr
           setStatus('ringing');
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
-          ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
+          sendSignal({ type: 'offer', sdp: offer.sdp });
         }
 
+        // Start long-polling for signals
+        pollInterval = setInterval(async () => {
+          try {
+            const res = await fetch(`/api/webrtc/poll/${channelId}?since=${lastPoll}`, {
+              headers: { 'Authorization': authHeader }
+            });
+            if (res.ok) {
+              lastPoll = Date.now();
+              const { signals } = await res.json();
+              for (const data of signals) {
+                if (data.type === 'offer' && !isInitiator) {
+                  await pc.setRemoteDescription(new RTCSessionDescription(data));
+                  const answer = await pc.createAnswer();
+                  await pc.setLocalDescription(answer);
+                  sendSignal({ type: 'answer', sdp: answer.sdp });
+                  setStatus('connected');
+                } else if (data.type === 'answer' && isInitiator) {
+                  await pc.setRemoteDescription(new RTCSessionDescription(data));
+                  setStatus('connected');
+                } else if (data.type === 'candidate') {
+                  await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                } else if (data.type === 'end') {
+                  handleEnd();
+                }
+              }
+            }
+          } catch (e) {
+            // Ignore polling errors
+          }
+        }, 1500); // 1.5 second loop for signaling
+        
       } catch (e) {
         console.error("Microphone access denied or WebRTC error", e);
         setStatus('ended');
         setTimeout(onEnd, 2000);
       }
     };
-
-    ws.onmessage = async (message) => {
-      const data = JSON.parse(message.data);
-      const pc = peerConnectionRef.current;
-      if (!pc) return;
-
-      if (data.type === 'offer' && !isInitiator) {
-        await pc.setRemoteDescription(new RTCSessionDescription(data));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        ws.send(JSON.stringify({ type: 'answer', sdp: answer.sdp }));
-        setStatus('connected');
-      } else if (data.type === 'answer' && isInitiator) {
-        await pc.setRemoteDescription(new RTCSessionDescription(data));
-        setStatus('connected');
-      } else if (data.type === 'candidate') {
-        await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-      } else if (data.type === 'end') {
-        handleEnd();
-      }
-    };
+    
+    initCall();
 
     return () => {
-      ws.close();
+      clearInterval(pollInterval);
+
+
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(t => t.stop());
       }
@@ -128,9 +151,7 @@ export default function VoiceCall({ contactName, onEnd, isInitiator = true }: Pr
   const handleEnd = () => {
     setStatus('ended');
     clearInterval(timerRef.current);
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'end' }));
-    }
+    sendSignal({ type: 'end' });
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(t => t.stop());
     }

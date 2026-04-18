@@ -10,7 +10,6 @@ interface Env {
   DB: D1Database;
   R2: R2Bucket;
   KV: KVNamespace;
-  QUOTA_LEDGER: DurableObjectNamespace;
 }
 
 export const mediaRoutes = new Hono<{ Bindings: Env }>();
@@ -46,16 +45,14 @@ mediaRoutes.post('/upload', async (c) => {
   const fileBytes = await file.arrayBuffer();
   const size = fileBytes.byteLength;
 
-  // Check quota via QuotaLedger DO (PATCH 15: race-condition-free)
-  const quotaDoId = c.env.QUOTA_LEDGER.idFromName(userId);
-  const quotaStub = c.env.QUOTA_LEDGER.get(quotaDoId);
-  const quotaRes = await quotaStub.fetch(new Request('https://internal/request', {
-    method: 'POST',
-    body: JSON.stringify({ bytes: size, type: 'r2' }),
-  }));
-  const quotaResult = await quotaRes.json() as { allowed: boolean };
+  // Check quota via direct D1 SUM (0 Budget Approach / No DO)
+  const userRow = await c.env.DB.prepare('SELECT r2_quota_mb FROM users WHERE id = ?').bind(userId).first<{r2_quota_mb: number}>();
+  const quotaBytes = (userRow?.r2_quota_mb || 136) * 1024 * 1024;
+  
+  const usageRow = await c.env.DB.prepare('SELECT SUM(size_bytes) as total FROM storage_objects WHERE user_id = ?').bind(userId).first<{total: number}>();
+  const currentBytes = usageRow?.total || 0;
 
-  if (!quotaResult.allowed) {
+  if (currentBytes + size > quotaBytes * 0.95) {
     return c.json({ error: 'USER_QUOTA_EXCEEDED' }, 413);
   }
 
@@ -141,13 +138,7 @@ mediaRoutes.delete('/:ephemeral_key_id', async (c) => {
       await c.env.R2.delete(item.r2_key);
     }
 
-    // Release quota (PATCH 15)
-    const quotaDoId = c.env.QUOTA_LEDGER.idFromName(userId);
-    const quotaStub = c.env.QUOTA_LEDGER.get(quotaDoId);
-    await quotaStub.fetch(new Request('https://internal/release', {
-      method: 'POST',
-      body: JSON.stringify({ bytes: item.size_bytes, type: 'r2' }),
-    }));
+    // DO Release stripped for 0 Budget mode
 
     await c.env.DB.prepare('DELETE FROM storage_objects WHERE id = ?').bind(keyId).run();
   }
@@ -162,10 +153,13 @@ mediaRoutes.get('/storage/usage', async (c) => {
   const userId = c.get('userId');
   if (!userId) return c.json({ error: 'Unauthorized' }, 401);
 
-  const quotaDoId = c.env.QUOTA_LEDGER.idFromName(userId);
-  const quotaStub = c.env.QUOTA_LEDGER.get(quotaDoId);
-  const res = await quotaStub.fetch(new Request('https://internal/usage'));
-  const usage = await res.json();
+  const usageRow = await c.env.DB.prepare('SELECT SUM(size_bytes) as total FROM storage_objects WHERE user_id = ?').bind(userId).first<{total: number}>();
+  const userRow = await c.env.DB.prepare('SELECT r2_quota_mb, d1_quota_mb FROM users WHERE id = ?').bind(userId).first<{r2_quota_mb: number, d1_quota_mb: number}>();
 
-  return c.json(usage);
+  return c.json({
+    r2_used_bytes: usageRow?.total || 0,
+    d1_used_bytes: 0,
+    r2_quota_bytes: (userRow?.r2_quota_mb || 136) * 1024 * 1024,
+    d1_quota_bytes: (userRow?.d1_quota_mb || 10) * 1024 * 1024,
+  });
 });

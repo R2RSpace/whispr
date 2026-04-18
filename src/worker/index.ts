@@ -12,18 +12,15 @@ import { messageRoutes } from './messages';
 import { constitutionRoutes } from './constitution-api';
 import { mediaRoutes } from './media';
 import { powRoutes } from './pow';
+import { signalingRoutes } from './signaling';
 import { handleStorageCleanup } from './storage/cleanup';
 
-// Re-export Durable Objects
-export { ConversationRoom } from './websocket';
-export { QuotaLedger } from './storage/quota';
+// Eliminated Durable Objects to respect Free Tier Limits
 
 interface Env {
   DB: D1Database;
   KV: KVNamespace;
   R2: R2Bucket;
-  CONVERSATION_ROOM: DurableObjectNamespace;
-  QUOTA_LEDGER: DurableObjectNamespace;
   OPRF_SECRET_KEY?: string;
 }
 
@@ -83,6 +80,9 @@ app.route('/api/constitution', constitutionRoutes);
 
 // Media
 app.route('/api/media', mediaRoutes);
+
+// 0 Budget WebRTC KV Signaling
+app.route('/api/webrtc', signalingRoutes);
 
 // Key management routes
 app.get('/api/keys/:username', async (c) => {
@@ -184,13 +184,7 @@ app.get('/api/keys/log/:uuid', async (c) => {
   return c.json({ entries: entries.results || [] });
 });
 
-// WebSocket upgrade route
-app.get('/api/ws/:mailbox_id', async (c) => {
-  const mailboxId = c.req.param('mailbox_id');
-  const doId = c.env.CONVERSATION_ROOM.idFromName(mailboxId);
-  const doStub = c.env.CONVERSATION_ROOM.get(doId);
-  return doStub.fetch(c.req.raw);
-});
+// WebSocket endpoint replaced by Polling
 
 // Storage usage
 app.get('/api/storage/usage', async (c) => {

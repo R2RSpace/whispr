@@ -1,0 +1,41 @@
+name = "whipsr"
+main = "src/worker/index.ts"
+compatibility_date = "2025-04-18"
+compatibility_flags = ["nodejs_compat"]
+
+[site]
+bucket = "./dist"
+
+[vars]
+ENVIRONMENT = "production"
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "whipsr-db"
+database_id = "whipsr-db-id"
+
+# KV Namespaces
+[[kv_namespaces]]
+binding = "KV"
+id = "whipsr-kv-id"
+
+# R2 Bucket
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "whipsr-media"
+
+# Durable Objects
+[durable_objects]
+bindings = [
+  { name = "CONVERSATION_ROOM", class_name = "ConversationRoom" },
+  { name = "QUOTA_LEDGER", class_name = "QuotaLedger" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ConversationRoom", "QuotaLedger"]
+
+# Cron Triggers
+[triggers]
+crons = ["0 2 * * *"]

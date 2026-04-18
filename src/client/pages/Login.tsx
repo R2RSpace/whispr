@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../App';
+import { ShieldIcon, LockIcon } from '../components/Icons';
 
 export default function Login() {
   const { login } = useApp();
@@ -309,10 +310,9 @@ export default function Login() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 32,
               boxShadow: '0 8px 24px rgba(123, 97, 255, 0.3)',
             }}>
-              🛡️
+              <ShieldIcon size={36} color="#fff" />
             </div>
             <h1 style={{ fontSize: 28, fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--md-sys-color-on-surface)' }}>
               Whispr
@@ -331,7 +331,7 @@ export default function Login() {
               fontWeight: 600,
               letterSpacing: '0.5px',
             }}>
-              v1.1 Canary Release
+              v1.2 Canary Release
             </span>
           </div>
 
@@ -393,7 +393,7 @@ export default function Login() {
             {loading && (
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 12, color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span className="animate-pulse">🔑</span>
+                  <LockIcon size={14} />
                   Deriving keys (Argon2id)... {progress}%
                 </div>
                 <div className="progress-bar">

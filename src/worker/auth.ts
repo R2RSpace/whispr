@@ -73,6 +73,13 @@ authRoutes.post('/register', async (c) => {
     return c.json({ error: 'Username already taken' }, 409);
   }
 
+  // Check total user limit
+  const countRow = await c.env.DB.prepare('SELECT COUNT(*) as num_users FROM users').first();
+  const numUsers = countRow ? Number(countRow.num_users) : 0;
+  if (numUsers >= 66) {
+    return c.json({ error: 'Registration closed: maximum server limit (66) reached' }, 403);
+  }
+
   // Hash the argon2_hash with bcrypt-equivalent (using SHA-256 + salt for Workers)
   // Note: Workers don't have bcrypt, so we use PBKDF2 as server-side KDF
   const serverSalt = new Uint8Array(16);
@@ -98,7 +105,7 @@ authRoutes.post('/register', async (c) => {
     bundle_seq: 0,
     bundle_seq_signature: null,
     oprf_state: null,
-    r2_quota_mb: 50,
+    r2_quota_mb: 136,
     d1_quota_mb: 10,
     created_at: now,
   });

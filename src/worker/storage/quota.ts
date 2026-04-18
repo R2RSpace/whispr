@@ -46,7 +46,7 @@ export class QuotaLedger extends DurableObject {
       case '/usage': {
         const r2Used = (await this.ctx.storage.get<number>('r2_used_bytes')) ?? 0;
         const d1Used = (await this.ctx.storage.get<number>('d1_used_bytes')) ?? 0;
-        const r2Quota = (await this.ctx.storage.get<number>('r2_quota_bytes')) ?? 50 * 1024 * 1024;
+        const r2Quota = (await this.ctx.storage.get<number>('r2_quota_bytes')) ?? 136 * 1024 * 1024;
         const d1Quota = (await this.ctx.storage.get<number>('d1_quota_bytes')) ?? 10 * 1024 * 1024;
         return Response.json({
           r2_used_bytes: r2Used,
@@ -72,7 +72,7 @@ export class QuotaLedger extends DurableObject {
     const quotaKey = `${type}_quota_bytes`;
 
     const current = (await this.ctx.storage.get<number>(usedKey)) ?? 0;
-    const quota = (await this.ctx.storage.get<number>(quotaKey)) ?? (type === 'r2' ? 50 * 1024 * 1024 : 10 * 1024 * 1024);
+    const quota = (await this.ctx.storage.get<number>(quotaKey)) ?? (type === 'r2' ? 136 * 1024 * 1024 : 10 * 1024 * 1024);
 
     // 95% threshold — leave 5% buffer
     if (current + bytes > quota * 0.95) {

@@ -4,21 +4,107 @@ import { PhoneIcon, EndCallIcon, MicIcon } from './Icons';
 interface Props {
   contactName: string;
   onEnd: () => void;
+  isInitiator?: boolean;
 }
 
-export default function VoiceCall({ contactName, onEnd }: Props) {
-  const [status, setStatus] = useState<'ringing' | 'connected' | 'ended'>('ringing');
+export default function VoiceCall({ contactName, onEnd, isInitiator = true }: Props) {
+  const [status, setStatus] = useState<'connecting' | 'ringing' | 'connected' | 'ended'>('connecting');
   const [duration, setDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const timerRef = useRef<number>(0);
 
-  // Simulate call connection
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+
   useEffect(() => {
-    const connectTimer = setTimeout(() => {
-      setStatus('connected');
-    }, 3000);
-    return () => clearTimeout(connectTimer);
-  }, []);
+    // 1. Initialize Audio
+    remoteAudioRef.current = new Audio();
+    remoteAudioRef.current.autoplay = true;
+
+    // 2. Initialize WebSocket Signaling
+    const ws = new WebSocket(`ws://${window.location.host}/api/ws/webrtc-signaling`);
+    wsRef.current = ws;
+
+    ws.onopen = async () => {
+      try {
+        // Request Microphone Access
+        localStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        
+        // Setup RTCPeerConnection
+        const pc = new RTCPeerConnection({
+          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        });
+        peerConnectionRef.current = pc;
+
+        // Add Local Tracks
+        localStreamRef.current.getTracks().forEach(track => {
+          pc.addTrack(track, localStreamRef.current!);
+        });
+
+        // Handle incoming streams
+        pc.ontrack = (event) => {
+          if (remoteAudioRef.current) {
+            remoteAudioRef.current.srcObject = event.streams[0];
+          }
+          setStatus('connected');
+        };
+
+        // ICE Candidate handling
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            ws.send(JSON.stringify({ type: 'candidate', candidate: event.candidate }));
+          }
+        };
+
+        // If Caller, Create Offer
+        if (isInitiator) {
+          setStatus('ringing');
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
+        }
+
+      } catch (e) {
+        console.error("Microphone access denied or WebRTC error", e);
+        setStatus('ended');
+        setTimeout(onEnd, 2000);
+      }
+    };
+
+    ws.onmessage = async (message) => {
+      const data = JSON.parse(message.data);
+      const pc = peerConnectionRef.current;
+      if (!pc) return;
+
+      if (data.type === 'offer' && !isInitiator) {
+        await pc.setRemoteDescription(new RTCSessionDescription(data));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        ws.send(JSON.stringify({ type: 'answer', sdp: answer.sdp }));
+        setStatus('connected');
+      } else if (data.type === 'answer' && isInitiator) {
+        await pc.setRemoteDescription(new RTCSessionDescription(data));
+        setStatus('connected');
+      } else if (data.type === 'candidate') {
+        await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+      } else if (data.type === 'end') {
+        handleEnd();
+      }
+    };
+
+    return () => {
+      ws.close();
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(t => t.stop());
+      }
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+      }
+      clearInterval(timerRef.current);
+    };
+  }, [isInitiator]);
 
   // Call duration timer
   useEffect(() => {
@@ -30,10 +116,26 @@ export default function VoiceCall({ contactName, onEnd }: Props) {
     return () => clearInterval(timerRef.current);
   }, [status]);
 
+  const handleMute = () => {
+    if (localStreamRef.current) {
+      localStreamRef.current.getAudioTracks().forEach(track => {
+        track.enabled = isMuted; // Toggle
+      });
+      setIsMuted(!isMuted);
+    }
+  };
+
   const handleEnd = () => {
     setStatus('ended');
     clearInterval(timerRef.current);
-    setTimeout(onEnd, 500);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'end' }));
+    }
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(t => t.stop());
+    }
+    if (peerConnectionRef.current) peerConnectionRef.current.close();
+    setTimeout(onEnd, 1000);
   };
 
   const format = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -81,6 +183,7 @@ export default function VoiceCall({ contactName, onEnd }: Props) {
         color: status === 'connected' ? '#4CAF50' : '#fff',
         marginBottom: 48,
       }}>
+        {status === 'connecting' && 'Connecting to network...'}
         {status === 'ringing' && 'Ringing...'}
         {status === 'connected' && format(duration)}
         {status === 'ended' && 'Call ended'}
@@ -92,7 +195,7 @@ export default function VoiceCall({ contactName, onEnd }: Props) {
           <CallButton
             icon={<MicIcon size={24} color={isMuted ? 'var(--md-sys-color-error)' : '#fff'} />}
             label={isMuted ? 'Unmute' : 'Mute'}
-            onClick={() => setIsMuted(!isMuted)}
+            onClick={handleMute}
             bg="rgba(255,255,255,0.1)"
           />
         )}
@@ -103,19 +206,6 @@ export default function VoiceCall({ contactName, onEnd }: Props) {
           bg="#F44336"
           large
         />
-      </div>
-
-      {/* Security badge */}
-      <div style={{
-        position: 'absolute', bottom: 32,
-        display: 'flex', alignItems: 'center', gap: 6,
-        fontSize: 11, opacity: 0.5,
-      }}>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-          <path d="M7 11V7a5 5 0 0110 0v4" />
-        </svg>
-        End-to-end encrypted
       </div>
 
       <style>{`

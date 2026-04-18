@@ -97,17 +97,9 @@ const DEFAULT_PROFILE: UserProfile = {
   lastSeen: 'everyone', readReceipts: true, profilePhoto: 'everyone',
 };
 
-const DEFAULT_CHATS: ChatItem[] = [
-  { id: 'whispr-dev', name: 'Whispr Developers', lastMessage: 'Welcome to Whispr!', timestamp: Date.now() - 60000, unread: 1, mailboxId: 'mb-official', verified: true, about: 'Official Whispr support channel' },
-];
+const DEFAULT_CHATS: ChatItem[] = [];
 
-const INITIAL_MESSAGES: Record<string, MessageItem[]> = {
-  'whispr-dev': [
-    { id: 'w1', text: 'Welcome to Whispr — Constitutional Secure Messaging!', sender: 'other', timestamp: Date.now() - 3600000, type: 'text' },
-    { id: 'w2', text: 'All messages are end-to-end encrypted with post-quantum cryptography (PQXDH + Triple Ratchet).', sender: 'other', timestamp: Date.now() - 3500000, type: 'text' },
-    { id: 'w3', text: 'Try sending a message, a photo, a sticker, or a voice note!', sender: 'other', timestamp: Date.now() - 3400000, type: 'text' },
-  ],
-};
+const INITIAL_MESSAGES: Record<string, MessageItem[]> = {};
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!LS.get('whispr_session'));
@@ -129,33 +121,97 @@ export default function App() {
   useEffect(() => { LS.set('whispr_profile', profile); }, [profile]);
   useEffect(() => { LS.set('whispr_blocked', blockedUsers); }, [blockedUsers]);
 
-  // Phase 2: Free Tier Polling engine (No WebSockets)
   useEffect(() => {
-    if (!isLoggedIn || !userId) return;
-    let lastPolled = Date.now();
+    const handleAddChat = (e: any) => {
+      const newChat = e.detail;
+      setChats(prev => {
+        if (prev.find(c => c.id === newChat.id)) return prev;
+        return [newChat, ...prev];
+      });
+    };
+    window.addEventListener('whispr_add_chat', handleAddChat);
+    return () => window.removeEventListener('whispr_add_chat', handleAddChat);
+  }, []);
+
+  // Phase 2: Free Tier Polling engine
+  useEffect(() => {
+    if (!isLoggedIn || !username) return;
+    
+    // Polling index tracker to avoid processing same messages over and over
+    let lastProcessedIds = new Set<string>();
+
     const interval = setInterval(async () => {
       try {
         const auth = LS.get('whispr_session');
-        // We poll a generic mailbox or iterate active chats.
-        // For 0 Budget demonstration, we check for new metadata
-        // We will assume the endpoint supports a general ping or we just check the active chat
-        // In a true app, we would poll /api/messages/sync?since=...
-        const res = await fetch(`/api/messages/${userId}?page=0`, {
+        const res = await fetch(`/api/messages/inbox-${username}?page=0`, {
            headers: { 'Authorization': `Bearer ${auth?.sessionId}` }
         });
         if (res.ok) {
            const data = await res.json();
            if (data.messages && data.messages.length > 0) {
-             // Append to local state if there are new ones
-             // Mocking the parse process
-             console.log("Polled messages:", data.messages);
+             const incomingMsgs = data.messages;
+             const newMsgsToState: Record<string, MessageItem[]> = {};
+             let createdNewChats = false;
+
+             setChats(prevChats => {
+               let mutChats = [...prevChats];
+
+               setMessages(prevMessages => {
+                 let mutMessages = { ...prevMessages };
+                 
+                 for (const encryptedItem of incomingMsgs) {
+                   if (lastProcessedIds.has(encryptedItem.id)) continue;
+                   lastProcessedIds.add(encryptedItem.id);
+
+                   try {
+                     const jsonStr = atob(encryptedItem.payload);
+                     const msg: MessageItem = JSON.parse(jsonStr);
+
+                     // Assume message was structured as { senderId, text, ... }
+                     // For our mockup E2EE blind layer, `senderId` acts as the chatId
+                     const senderId = msg.sender || 'unknown';
+                     
+                     // Ensure sender side is other since we received it in our inbox
+                     msg.sender = 'other';
+                     
+                     if (!mutMessages[senderId]) mutMessages[senderId] = [];
+                     // check for duplicates locally
+                     if (!mutMessages[senderId].find(m => m.id === msg.id)) {
+                       mutMessages[senderId].push(msg);
+                     }
+
+                     // find chat locally to update
+                     const chatIdx = mutChats.findIndex(c => c.id === senderId);
+                     const summary = msg.type === 'photo' ? '📷 Photo' : msg.text || '';
+                     if (chatIdx >= 0) {
+                       mutChats[chatIdx] = { ...mutChats[chatIdx], lastMessage: summary.slice(0, 50), timestamp: msg.timestamp || Date.now(), unread: (mutChats[chatIdx].unread || 0) + 1 };
+                     } else {
+                       mutChats.push({
+                         id: senderId,
+                         name: senderId, // display username
+                         lastMessage: summary.slice(0, 50),
+                         timestamp: msg.timestamp || Date.now(),
+                         unread: 1,
+                         mailboxId: `inbox-${senderId}`
+                       });
+                       createdNewChats = true;
+                     }
+                   } catch (parseErr) {
+                     // Could not decode or parse standard format
+                   }
+                 }
+                 return mutMessages;
+               });
+
+               return mutChats;
+             });
            }
         }
       } catch (e) { }
-    }, 3000); // Poll every 3 seconds to preserve 100k free tier limit (approx 28k req/day per user online continuously)
+    }, 3000); // Poll every 3 seconds to preserve 100k free tier limit
     
     return () => clearInterval(interval);
-  }, [isLoggedIn, userId]);
+  }, [isLoggedIn, username]);
 
   const login = useCallback((uid: string, uname: string, sid: string) => {
     setUserId(uid); setUsername(uname); setSessionId(sid); setIsLoggedIn(true);
@@ -185,14 +241,17 @@ export default function App() {
     setChats(prev => prev.map(c => c.id === chatId ? { ...c, lastMessage: label.slice(0, 50), timestamp: msg.timestamp } : c));
 
     // Network Sync phase (Optimistic)
-    if (msg.sender === 'self' && userId) {
+    if (msg.sender === 'self' && username) {
       setTimeout(async () => {
         try {
           const auth = LS.get('whispr_session');
-          // Blind-server constraint wrapper: encode content into base64 mock
-          const payload = btoa(JSON.stringify(msg)); 
-          // Network execution
-          await fetch(`/api/mailbox/${chatId}`, {
+          // Add sender identification so recipient knows who is writing
+          const payloadObj = { ...msg, sender: username }; 
+          
+          // Blind-server constraint wrapper: encode content into base64
+          const payload = btoa(JSON.stringify(payloadObj)); 
+          // Network execution against recipient's inbox
+          await fetch(`/api/mailbox/inbox-${chatId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${auth?.sessionId}` },
             body: JSON.stringify({ payload, message_iv: 'webrtc-iv', type: 'encrypted_message' })
@@ -202,7 +261,7 @@ export default function App() {
         }
       }, 0);
     }
-  }, [userId]);
+  }, [username]);
 
   const deleteMessage = useCallback((chatId: string, msgId: string, forEveryone?: boolean) => {
     setMessages(prev => {

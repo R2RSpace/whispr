@@ -112,11 +112,18 @@ export default function ChatList() {
         setSearchUserError('User tidak ditemukan / User not found');
       } else {
         // Automatically create a new chat context and route to it
-        const newChatId = `chat-${crypto.randomUUID()}`;
-        // Since we don't have the addChat function natively yet, we will just simulate opening it
-        // Or we mutate local chats array directly (temporary until App.tsx rewrite)
-        // Wait, for Phase 1 we will just alert 'success' or open a blank chat
-        alert(`User found! Chat will be created via WebSockets in Phase 2`);
+        const newChat = {
+          id: newUsername.trim(),
+          name: newUsername.trim(),
+          lastMessage: '',
+          timestamp: Date.now(),
+          unread: 0,
+          mailboxId: `inbox-${newUsername.trim()}`
+        };
+        // Use a global trick if addChat is not available, or dispatch event
+        // But since we just added an App.tsx method or not, wait let me dispatch event
+        window.dispatchEvent(new CustomEvent('whispr_add_chat', { detail: newChat }));
+        setSelectedChat(newChat);
         setShowNewChat(false);
         setNewUsername('');
       }

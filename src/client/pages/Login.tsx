@@ -95,21 +95,21 @@ export default function Login() {
     setProgress(10);
 
     try {
-      // Simulate Argon2id progress
-      setProgress(30);
-      await new Promise(r => setTimeout(r, 500));
-      setProgress(60);
-      await new Promise(r => setTimeout(r, 500));
-      setProgress(90);
-
       const API_BASE = '';
       
       if (isSignUp) {
+        setProgress(20);
         // Get PoW challenge
-        const powRes = await fetch(`${API_BASE}/api/pow/challenge`).catch(() => null);
+        const powRes = await fetch(`${API_BASE}/api/pow/challenge`);
+        if (!powRes.ok) throw new Error('Failed to fetch PoW challenge');
+        const powData = await powRes.json();
         
-        // Generate mock auth hash (in production, Argon2id runs in Worker)
-        const authHash = await hashForDemo(password);
+        setProgress(40);
+        // Solve PoW challenge locally
+        const nonce = await solvePoW(powData.seed, powData.difficulty);
+        
+        setProgress(60);
+        const authHash = await hashForDemo(password); // uses SHA-256
 
         // Register
         const res = await fetch(`${API_BASE}/api/auth/register`, {
@@ -121,32 +121,27 @@ export default function Login() {
             argon2_salt: crypto.randomUUID(),
             key_bundle_iv: crypto.randomUUID(),
             device_pubkey: crypto.randomUUID(),
-            pow_seed_id: 'demo',
-            pow_nonce: '0000',
+            pow_seed_id: powData.seed_id,
+            pow_nonce: nonce,
           }),
-        }).catch(() => null);
+        });
 
-        if (res && res.ok) {
-          const data = await res.json();
-          // Show mnemonic
+        if (res.ok) {
+          setProgress(100);
           const words = generateDemoMnemonic();
           setMnemonic(words.real);
           setMnemonicDuress(words.duress);
           setConfirmIndices(getRandomIndices());
           setShowMnemonic(true);
-          setProgress(100);
         } else {
-          // Demo mode: proceed anyway
-          const words = generateDemoMnemonic();
-          setMnemonic(words.real);
-          setMnemonicDuress(words.duress);
-          setConfirmIndices(getRandomIndices());
-          setShowMnemonic(true);
-          setProgress(100);
+          const errJSON = await res.json().catch(() => ({}));
+          throw new Error(errJSON.error || 'Registration failed');
         }
       } else {
         // Login
+        setProgress(10);
         const authHash = await hashForDemo(password);
+        setProgress(50);
         
         const res = await fetch(`${API_BASE}/api/auth/login`, {
           method: 'POST',
@@ -156,22 +151,20 @@ export default function Login() {
             password_hash: authHash,
             device_pubkey: crypto.randomUUID(),
           }),
-        }).catch(() => null);
+        });
 
-        if (res && res.ok) {
+        if (res.ok) {
           const data = await res.json();
+          setProgress(100);
           login(data.user_id, username, data.session_id);
         } else {
-          // Demo mode
-          login(crypto.randomUUID(), username, crypto.randomUUID());
+          const errJSON = await res.json().catch(() => ({}));
+          throw new Error(errJSON.error || 'Login failed');
         }
-        setProgress(100);
       }
-    } catch (err) {
-      // Demo fallback
-      if (!isSignUp) {
-        login(crypto.randomUUID(), username, crypto.randomUUID());
-      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred connecting to the server');
+      setProgress(0);
     } finally {
       setLoading(false);
     }
@@ -183,9 +176,16 @@ export default function Login() {
       words[idx]?.toLowerCase() === confirmWords[i]?.toLowerCase()
     );
 
-    if (correct || true) { // Always allow in demo
+    if (correct) {
       setMnemonicConfirmed(true);
-      login(crypto.randomUUID(), username, crypto.randomUUID());
+      // Generate a true login mechanism after successfully confirming mnemonic
+      // For simplicity in UI flow, we just tell them to run Login step again manually or auto-log them in
+      // Assuming registration set session if it returned it, but it didn't, so prompt login.
+      alert('Registration complete! Please sign in.');
+      setIsSignUp(false);
+      setShowMnemonic(false);
+      setPassword('');
+      setProgress(0);
     } else {
       setError('Confirmation words do not match. Please try again.');
     }
@@ -453,7 +453,21 @@ export default function Login() {
   );
 }
 
-// --- Demo helpers ---
+// --- Helpers ---
+async function solvePoW(seed: string, difficulty: number): Promise<string> {
+  let nonce = 0;
+  const prefix = '0'.repeat(difficulty);
+  while (true) {
+    const nonceStr = nonce.toString();
+    const data = new TextEncoder().encode(nonceStr + seed);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    if (hashHex.startsWith(prefix)) return nonceStr;
+    nonce++;
+  }
+}
+
 async function hashForDemo(password: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(password);

@@ -112,18 +112,6 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
     setShowEmoji(false);
     setShowSticker(false);
     setReplyingTo(null);
-
-    // Auto-reply
-    setTimeout(() => {
-      lamportRef.current++;
-      addMessage(selectedChat.id, {
-        id: crypto.randomUUID(),
-        text: getAutoReply(inputText),
-        sender: 'other',
-        timestamp: Date.now(),
-        type: 'text',
-      });
-    }, 1000 + Math.random() * 2000);
   }, [inputText, selectedChat, addMessage, replyingTo]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -343,9 +331,4 @@ function InputBtn({ onClick, children }: { onClick: (e?: any) => void; children:
 
 function MenuBtn({ onClick, children, danger }: { onClick: () => void; children: React.ReactNode; danger?: boolean }) {
   return <button onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px', border: 'none', background: 'none', cursor: 'pointer', borderRadius: 8, color: danger ? 'var(--md-sys-color-error)' : 'var(--md-sys-color-on-surface)', fontSize: 13, fontFamily: 'var(--font-family)', textAlign: 'left', transition: 'background 0.15s' }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--md-sys-color-surface-container-high)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{children}</button>;
-}
-
-function getAutoReply(input: string): string {
-  const replies = ['That makes sense! The constitutional review seems to work well.', 'Great point. The blind server architecture keeps everything private.', 'I agree. Post-quantum crypto is essential for future-proofing.', 'Good to hear! The triple ratchet provides perfect forward secrecy.', 'Absolutely. Privacy and safety should always work together.'];
-  return replies[Math.floor(Math.random() * replies.length)];
 }

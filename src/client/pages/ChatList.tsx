@@ -202,13 +202,25 @@ export default function ChatList() {
         <div className="avatar" style={{ width: 32, height: 32, fontSize: 14, background: '#7B61FF' }}>
           {username?.charAt(0).toUpperCase()}
         </div>
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{username}</div>
           <div style={{ fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: 4 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAF50', display: 'inline-block' }} />
             Online · E2EE Active
           </div>
         </div>
+        <span style={{
+          padding: '2px 8px',
+          borderRadius: 10,
+          background: 'rgba(123, 97, 255, 0.12)',
+          color: 'var(--md-sys-color-primary)',
+          fontSize: 9,
+          fontWeight: 600,
+          letterSpacing: '0.3px',
+          flexShrink: 0,
+        }}>
+          v1.1
+        </span>
       </div>
     </div>
   );

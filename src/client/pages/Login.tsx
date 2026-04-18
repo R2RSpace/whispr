@@ -320,6 +320,19 @@ export default function Login() {
             <p style={{ fontSize: 13, color: 'var(--md-sys-color-on-surface-variant)', marginTop: 4 }}>
               Constitutional Secure Messaging
             </p>
+            <span style={{
+              display: 'inline-block',
+              marginTop: 8,
+              padding: '2px 10px',
+              borderRadius: 12,
+              background: 'rgba(123, 97, 255, 0.15)',
+              color: 'var(--md-sys-color-primary)',
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.5px',
+            }}>
+              v1.1 Canary Release
+            </span>
           </div>
 
           <form ref={formRef} onSubmit={handleSubmit}>

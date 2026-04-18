@@ -1,4 +1,4 @@
-name = "whipsr"
+name = "Whispr"
 main = "src/worker/index.ts"
 compatibility_date = "2025-04-18"
 compatibility_flags = ["nodejs_compat"]
@@ -12,18 +12,18 @@ ENVIRONMENT = "production"
 # D1 Database
 [[d1_databases]]
 binding = "DB"
-database_name = "whipsr-db"
-database_id = "whipsr-db-id"
+database_name = "Whispr-db"
+database_id = "Whispr-db-id"
 
 # KV Namespaces
 [[kv_namespaces]]
 binding = "KV"
-id = "whipsr-kv-id"
+id = "Whispr-kv-id"
 
 # R2 Bucket
 [[r2_buckets]]
 binding = "R2"
-bucket_name = "whipsr-media"
+bucket_name = "Whispr-media"
 
 # Durable Objects
 [durable_objects]

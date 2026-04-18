@@ -1,4 +1,4 @@
-# Whipsr — Future Features (Out of Scope)
+# Whispr — Future Features (Out of Scope)
 
 These features are documented for future implementation and are **not** included in the current zero-budget build.
 
@@ -6,7 +6,7 @@ These features are documented for future implementation and are **not** included
 
 ## FUTURE-01: Oblivious RAM (ORAM) over D1
 **Why not now:** ORAM requires O(log N) read/write operations per access pattern hide, which exceeds Cloudflare Worker CPU time limits (10ms on free tier). Implementing Path ORAM or Ring ORAM would need dedicated compute (e.g., a persistent VM).
-**When viable:** When Whipsr moves to a paid compute tier with >50ms CPU allowance per request.
+**When viable:** When Whispr moves to a paid compute tier with >50ms CPU allowance per request.
 
 ## FUTURE-02: ZK-SNARKs (groth16) for Key Ownership Proof
 **Why not now:** Libraries like `snarkjs` produce bundles >5MB, exceeding Worker bundle size limits (1MB compressed). Additionally, ZK proof generation requires significant client-side memory (~500MB for typical circuits).

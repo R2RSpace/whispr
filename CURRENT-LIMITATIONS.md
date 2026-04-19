@@ -1,6 +1,6 @@
-# Whispr — Future Features (Out of Scope)
+# Whispr — Current Limitations (Honesty First)
 
-These features are documented for future implementation and are **not** included in the current zero-budget build.
+These features are documented to acknowledge what is currently **not** implemented in our prototype version.
 
 ---
 

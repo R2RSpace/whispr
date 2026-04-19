@@ -1,12 +1,11 @@
 /** Whispr — Signal Triple Ratchet (SPQR)
+ * ⚠️ WARNING: EXPERIMENTAL PROTOTYPE
+ * This implementation is pending external security audits. Do not use for extremely sensitive traffic.
+ * 
  * Implements Signal Protocol Quantum Ratchet with three layers:
  *   Ratchet A: Double Ratchet (X25519, classical)
  *   Ratchet B: ML-KEM-768 ratchet (post-quantum)
  *   Final key: HKDF-SHA512(key_A || key_B) → AES-256-GCM
- * 
- * Each message uses a unique symmetric key derived from dual ratchet state.
- * Forward secrecy: compromising current keys cannot decrypt past messages.
- * Post-compromise security: ratcheting recovers security after key compromise.
  */
 import { x25519 } from '@noble/curves/ed25519';
 import { ml_kem768 } from '@noble/post-quantum/ml-kem';
@@ -14,7 +13,7 @@ import { hkdf } from '@noble/hashes/hkdf';
 import { sha512 } from '@noble/hashes/sha512';
 import { hmac } from '@noble/hashes/hmac';
 import { sha256 } from '@noble/hashes/sha256';
-import { shred } from './keyDerivation';
+import { shred } from '../workers/memory-shred';
 
 export interface RatchetState {
   // Ratchet A: Classical Double Ratchet

@@ -1,7 +1,9 @@
 /** Whispr — PQXDH Key Exchange
  * Implements PQXDH = X25519 + ML-KEM-768 hybrid key exchange.
- * Per Signal spec + ML-KEM-768 for post-quantum security.
- * PATCH 08: Generates mailbox IDs during handshake.
+ * 
+ * ⚠️ WARNING: EXPERIMENTAL PROTOTYPE
+ * This implementation has NOT been externally audited. Do not use for sensitive communications.
+ * Default to standard X25519 when post-quantum security is not explicitly required.
  * 
  * Key Agreement Output: shared_secret used to initialize Triple Ratchet.
  */
@@ -9,7 +11,7 @@ import { x25519 } from '@noble/curves/ed25519';
 import { ml_kem768 } from '@noble/post-quantum/ml-kem';
 import { hkdf } from '@noble/hashes/hkdf';
 import { sha512 } from '@noble/hashes/sha512';
-import { shred } from './keyDerivation';
+import { shred } from '../workers/memory-shred';
 
 export interface X25519KeyPair {
   publicKey: Uint8Array;

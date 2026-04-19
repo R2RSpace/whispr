@@ -1,8 +1,8 @@
 {
-  "_preamble": "Whispr is a secure messaging platform founded on the principle that communication is a fundamental human right — one that must be protected from surveillance, manipulation, and abuse. Every message on this platform passes through a Constitutional AI layer that safeguards truthful discourse, protects vulnerable individuals, and prevents weaponization of speech. Like a nation's constitution, these principles represent immutable values: they can be amended, but never ignored. The Constitution exists not to censor, but to ensure that the freedom to communicate does not become the freedom to harm. We believe privacy and responsibility are not opposites — they are partners.",
-  "_version": "1.0.0",
-  "_last_updated": "2026-04-18T00:00:00Z",
-  "_schema_version": 1,
+  "_preamble": "Whispr's current prototype uses a simplified, 3-rule constitution focused only on absolute objective harm. Subjective moderation is out-of-scope for this prototype.",
+  "_version": "1.0.1",
+  "_last_updated": "2026-04-19T00:00:00Z",
+  "_schema_version": 2,
 
   "principles": [
     {
@@ -13,85 +13,30 @@
       "scope": "both",
       "enforcement_mode": "BLOCK",
       "violation_threshold": 0.7,
-      "keywords": ["kill", "murder", "attack", "bomb", "shoot", "stab", "assault", "execute", "torture", "maim", "destroy them", "blow up", "gun down"],
-      "patterns": ["\\b(i('ll| will|'m going to|am going to)\\s+(kill|murder|shoot|stab|attack|hurt|bomb))\\b", "\\b(death\\s+to\\b)", "\\b(should\\s+(die|be killed|be shot))\\b"]
+      "keywords": ["kill", "murder", "attack", "bomb", "shoot", "stab", "assault"],
+      "patterns": ["\\b(i('ll| will|'m going to|am going to)\\s+(kill|murder|shoot|stab|attack|hurt|bomb))\\b"]
     },
     {
       "id": "P2",
       "name": "Child Safety",
-      "description": "Absolute prohibition on any content that sexualizes, exploits, endangers, or facilitates abuse of minors. This principle has the highest enforcement priority and cannot be overridden by any other principle.",
+      "description": "Absolute prohibition on any content that sexualizes, exploits, endangers, or facilitates abuse of minors.",
       "weight": 1.0,
       "scope": "both",
       "enforcement_mode": "BLOCK",
       "violation_threshold": 0.5,
-      "keywords": ["csam", "minor", "underage", "child abuse", "grooming", "predator"],
+      "keywords": ["csam", "minor", "underage", "child abuse", "grooming"],
       "patterns": ["\\b(child|kid|minor|underage|teen|juvenile)\\s*(porn|sex|nude|naked|exploit)"]
     },
     {
       "id": "P3",
-      "name": "Epistemic Clarity",
-      "description": "Penalize vague manipulative framing, deliberate misinformation campaigns, and coordinated deception tactics. Encourage clear, honest communication.",
-      "weight": 0.7,
-      "scope": "user",
-      "enforcement_mode": "WARN",
-      "violation_threshold": 0.65,
-      "keywords": ["fake news", "false flag", "hoax", "propaganda", "brainwash", "conspiracy"],
-      "patterns": ["\\b(they don't want you to know)\\b", "\\b(wake up sheeple)\\b", "\\b(mainstream media lies)\\b", "\\b(do your own research)\\b"]
-    },
-    {
-      "id": "P4",
-      "name": "Anti-Harassment",
+      "name": "Anti-Harassment/Doxxing",
       "description": "Messages must not engage in targeted harassment, sustained intimidation, doxxing, or coordinated bullying campaigns against individuals.",
       "weight": 0.9,
       "scope": "both",
       "enforcement_mode": "BLOCK",
       "violation_threshold": 0.7,
-      "keywords": ["doxx", "dox", "swat", "harass", "stalk", "bully", "intimidate", "threaten"],
-      "patterns": ["\\b(i know where you live)\\b", "\\b(your (address|home|school|work) is)\\b", "\\b(everyone report|mass report)\\b"]
-    },
-    {
-      "id": "P5",
-      "name": "Anti-Discrimination",
-      "description": "Prohibit hate speech targeting protected characteristics including race, ethnicity, religion, gender, sexual orientation, disability, or national origin.",
-      "weight": 0.85,
-      "scope": "both",
-      "enforcement_mode": "WARN",
-      "violation_threshold": 0.6,
-      "keywords": ["racial slur markers", "hate", "inferior", "subhuman", "vermin", "cockroach", "parasite"],
-      "patterns": ["\\b(all\\s+(blacks|whites|jews|muslims|gays|immigrants)\\s+(are|should))\\b", "\\b(go back to your country)\\b"]
-    },
-    {
-      "id": "P6",
-      "name": "Privacy Sovereignty",
-      "description": "Users own their data absolutely. Messages must not attempt to extract, leak, or coerce disclosure of private information from other users without consent.",
-      "weight": 0.75,
-      "scope": "user",
-      "enforcement_mode": "ANNOTATE",
-      "violation_threshold": 0.6,
-      "keywords": ["send me your password", "social security", "credit card number", "bank account", "what's your address"],
-      "patterns": ["\\b(send|give|tell)\\s+(me|us)\\s+(your|the)\\s+(password|ssn|social security|credit card|bank|address|phone number)\\b"]
-    },
-    {
-      "id": "P7",
-      "name": "Autonomy Preservation",
-      "description": "Protect individuals' right to independent thought, decision-making, and self-determination. Flag coercive control patterns, undue influence, and psychological manipulation.",
-      "weight": 0.65,
-      "scope": "user",
-      "enforcement_mode": "ANNOTATE",
-      "violation_threshold": 0.7,
-      "keywords": ["obey me", "you have no choice", "do as i say", "i control you", "you belong to me", "no one else cares about you"],
-      "patterns": ["\\b(you (must|have to|need to|better|should) (obey|listen to|do what|follow))\\b", "\\b(if you (leave|tell anyone|don't do))\\b"]
-    },
-    {
-      "id": "P8",
-      "name": "Self-Harm Prevention",
-      "description": "Detect and sensitively handle messages indicating suicidal ideation, self-harm intent, or crisis situations. Provide supportive annotations rather than punitive enforcement.",
-      "weight": 0.8,
-      "scope": "both",
-      "enforcement_mode": "ANNOTATE",
-      "violation_threshold": 0.55,
-      "keywords": ["kill myself", "end it all", "suicide", "self harm", "cut myself", "want to die", "no reason to live", "overdose"],
-      "patterns": ["\\b(i('m| am)\\s+(going to|gonna)\\s+(kill|hurt|end)\\s+(myself|it all|my life))\\b", "\\b(want to (die|end it|disappear))\\b"]
+      "keywords": ["doxx", "dox", "swat", "harass", "stalk"],
+      "patterns": ["\\b(i know where you live)\\b", "\\b(your (address|home|school|work) is)\\b"]
     }
   ]
 }

@@ -21,13 +21,6 @@ Whispr is currently an early-stage **prototype** exploring the intersection of E
 *   **Memory Shredding**: Implements a `double-wipe` mechanism for sensitive buffers in Web Workers.
 *   **Blind Server**: Message content is never seen by the server. Only encrypted blobs are stored in R2.
 
-## 🚧 Planned for v0.2+ (The "Hype" Section)
-
-These features are **NOT** currently implemented but are our active R&D goals:
-*   **PQXDH & Triple Ratchet**: Post-quantum security to defend against future quantum computer attacks.
-*   **Semantic AI Scanning**: Moving from Regex to on-device small language models (ONNX/TensorFlow.js) for intelligent safety.
-*   **20 Security Patches**: A series of advanced mitigations (OPRF, Tiered Padding, etc.) currently in conceptual stages.
-
 > [!IMPORTANT]
 > For a full list of architectural limitations and out-of-scope features due to Cloudflare Free Tier boundaries, please see **[CURRENT-LIMITATIONS.md](./CURRENT-LIMITATIONS.md)**.
 

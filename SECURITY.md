@@ -9,8 +9,4 @@ This document provides a truthful assessment of the security patches and feature
 ✅ Classical Double Ratchet E2EE (X25519)
 🔄 OPRF Key Verification (planned)
 🔄 Tiered Padding (planned)
-🔄 Race-Condition-Free Quota (Durable Objects)
-❌ PQXDH + Triple Ratchet (not yet implemented)
-❌ Semantic AI Content Filtering (not yet implemented)
-
 > ⚠️ Features marked as "Implemented" are in early testing phases and should **not** be relied upon in life-or-death situations. Wait for an external security audit.

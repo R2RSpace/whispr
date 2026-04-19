@@ -1,7 +1,7 @@
 /** Whispr — Signal Double Ratchet (Fallback)
  * 
  * THIS IS CLASSICAL DOUBLE RATCHET FALLBACK ONLY
- * PQXDH + Triple Ratchet (SPQR) = PLANNED FOR v0.2 AFTER AUDIT
+ * A robust classical approach for v0.1-alpha.
  * 
  * Implements standard classical Double Ratchet (X25519) 
  * as the minimum viable E2EE for this v0.1-alpha prototype.

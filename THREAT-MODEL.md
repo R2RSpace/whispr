@@ -1,16 +1,18 @@
 # Whispr Threat Model (v0.1-alpha)
 
-This document outlines the realistic threat model for the Whispr prototype. 
+This document defines the security boundaries of the Whispr prototype.
 
-## What IS Protected
-- **In-Transit E2EE**: Messages are encrypted via classical Elliptic Curve Diffie-Hellman (X25519) before they leave your device. The Cloudflare edge servers cannot read them.
-- **Data at Rest (Server)**: Messages are stored only as encrypted blobs in Cloudflare R2/D1.
+### 🛡️ What we DEFEND against:
+1.  **Passive Network Eavesdropping**: All messages are E2EE via Double Ratchet (Classical). An ISP or attacker with packet access cannot read contents.
+2.  **Semi-Honest Server**: The Cloudflare Worker/R2 backend only sees encrypted blobs and metadata (mailbox IDs). It cannot read message content.
+3.  **Low-Level Content Violations**: The Constitutional AI (rule-based) effectively blocks accidental or public-level violations of the core principles defined in `constitution.json`.
 
-## What is VULNERABLE
-- **Device Compromise**: If the client device is compromised by malware or a malicious OS, the E2EE guarantees are voided. Keys are currently stored in memory and `localStorage`/`IndexedDB`.
-- **Constitutional AI Bypass**: The current rule-based filter can be bypassed via slang or language modifications. It does not provide absolute physical prevention of harmful content against determined adversaries.
-- **Side Channels**: Until tiered padding is finalized, it may be possible to gauge the semantic density of messages by observing ciphertext size.
-- **Quantum Harvest Attacks**: The post-quantum keys (ML-KEM-768) are implemented in prototype but have **not** been mathematically audited for implementation flaws. Do not rely on them against present-day nation-state adversaries capturing traffic.
+### ⚠️ What we do NOT defend against:
+1.  **Compromised Endpoints**: If your browser or OS is infected with malware, E2EE is bypassed (key/message theft).
+2.  **Quantum Decryption**: Current v0.1-alpha uses classical crypto. "Harvest Now, Decrypt Later" applies until v0.2.
+3.  **Advanced Filter Bypass**: Since the filter is rule-based and client-side, a technically proficient user can bypass it by modifying the locally running Javascript.
+4.  **Metadata Leakage**: Access patterns to Cloudflare R2/KV may leak who you are talking to and when. We do not currently implement ORAM or padding.
+5.  **Malicious Signaling**: A compromised Cloudflare account could disrupt signaling or potentially facilitate MITM if keys are not verified out-of-band.
 
-## Trust Boundaries
-You are currently trusting the Whispr Web App host (Cloudflare pages) to serve un-tampered JavaScript. In the future, standalone desktop apps will eliminate this supply-chain risk.
+### 🛑 Usage Warning
+This is a prototype for researchers and developers. It is not intended for use by activists, journalists, or anyone in a high-risk environment.

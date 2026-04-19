@@ -32,7 +32,7 @@ export default function ContactInfo() {
             <LockIcon size={24} color="var(--md-sys-color-on-surface-variant)" />
             <div>
               <div style={{ fontSize: 16 }}>Encryption</div>
-              <div style={{ fontSize: 14, color: 'var(--md-sys-color-on-surface-variant)' }}>Messages and calls are end-to-end encrypted with PQXDH.</div>
+              <div style={{ fontSize: 14, color: 'var(--md-sys-color-on-surface-variant)' }}>Messages and calls are end-to-end encrypted.</div>
             </div>
           </div>
         </div>

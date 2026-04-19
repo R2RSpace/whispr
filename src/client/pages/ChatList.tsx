@@ -283,7 +283,7 @@ export default function ChatList() {
             />
             {searchUserError && <div style={{ color: 'var(--md-sys-color-error)', fontSize: 12, marginBottom: 12 }}>{searchUserError}</div>}
             <p style={{ fontSize: 12, color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <ShieldIcon size={14} color="var(--md-sys-color-primary)" /> PQXDH key exchange will be initiated
+              <ShieldIcon size={14} color="var(--md-sys-color-primary)" /> End-to-end encryption will be initiated
             </p>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button className="btn btn-outlined" onClick={() => setShowNewChat(false)} disabled={isSearchingUser}>Cancel</button>
@@ -307,7 +307,7 @@ export default function ChatList() {
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAF50', display: 'inline-block' }} />Online
           </div>
         </div>
-        <span style={{ padding: '2px 8px', borderRadius: 10, background: 'rgba(123,97,255,0.12)', color: 'var(--md-sys-color-primary)', fontSize: 9, fontWeight: 600, flexShrink: 0 }}>v1.2</span>
+        <span style={{ padding: '2px 8px', borderRadius: 10, background: 'rgba(123,97,255,0.12)', color: 'var(--md-sys-color-primary)', fontSize: 9, fontWeight: 600, flexShrink: 0 }}>v0.1-alpha (Prototype)</span>
       </div>
 
       {/* Confirm dialog */}

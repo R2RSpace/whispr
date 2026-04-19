@@ -1,36 +1,22 @@
-# Whispr — Current Limitations (Honesty First)
+# Current Architectural Limitations (v0.1-alpha)
 
-These features are documented to acknowledge what is currently **not** implemented in our prototype version.
+Whispr is currently hosted on the **Cloudflare Free Tier**, which imposes strict resource constraints. As an honest prototype, we must disclose that several "advanced" features are currently impossible or severely limited by this environment.
 
----
+### 1. The "Zero Infrastructure" Paradox
+While Whispr aims for serverless, it relies on Cloudflare's infrastructure. We cannot claim "zero infrastructure overhead" while running on a commercial cloud provider.
 
-## FUTURE-01: Oblivious RAM (ORAM) over D1
-**Why not now:** ORAM requires O(log N) read/write operations per access pattern hide, which exceeds Cloudflare Worker CPU time limits (10ms on free tier). Implementing Path ORAM or Ring ORAM would need dedicated compute (e.g., a persistent VM).
-**When viable:** When Whispr moves to a paid compute tier with >50ms CPU allowance per request.
+### 2. Cloudflare Free Tier Constraints
+-   **No ORAM (Oblivious RAM)**: Accessing KV or R2 leaks access patterns. True ORAM requires massive compute and memory overhead that exceeds Free Tier limits.
+-   **No ZK-SNARKs**: Verification of Zero-Knowledge proofs for group state or message validity is computationally expensive and frequently times out on edge workers.
+-   **Limited Storage**: R2 storage is capped. While we encrypt blobs, we cannot provide infinite storage for 9GB per user without a paid subscription.
 
-## FUTURE-02: ZK-SNARKs (groth16) for Key Ownership Proof
-**Why not now:** Libraries like `snarkjs` produce bundles >5MB, exceeding Worker bundle size limits (1MB compressed). Additionally, ZK proof generation requires significant client-side memory (~500MB for typical circuits).
-**When viable:** When WebAssembly SNARK provers become lightweight enough for browser deployment, or when a dedicated ZK microservice is budgeted.
+### 3. Client-Side Constraints
+-   **No Semantic AI**: Loading a >100MB LLM into a browser tab's Web Worker isn't feasible for a lightweight messaging app. We use Regex/NFKC rules instead.
+-   **Single Point of Failure**: If the client device is compromised, the "Constitutional AI" can be bypassed by modifying the local source code. This prototype protects data *in transit*, not *on device*.
 
-## FUTURE-03: Traffic Chaffing (continuous dummy packets)
-**Why not now:** Continuous chaff packets consume Durable Object compute on the free tier (limited to 1000 WebSocket messages/min). With typical usage, this would exhaust the free tier within hours.
-**When viable:** On Cloudflare Workers Paid plan where DO compute is metered but generous.
-
-## FUTURE-04: Combiner Cryptography (FrodoKEM + Secp256k1)
-**Why not now:** ML-KEM-768 + X25519 already provides IND-CCA2 security against both classical and quantum adversaries. FrodoKEM adds ~20KB to key sizes and 10x latency to key encapsulation.
-**When viable:** If NIST downgrades ML-KEM confidence or lattice-based attacks improve, adding FrodoKEM as a combiner provides defense-in-depth.
+### 4. Networking
+-   **WebRTC Leaks**: Real-time signaling via KV is slower than traditional WebSockets. Under high load, signaling may experience significant latency.
 
 ---
 
-## Out-of-Scope Features (Not Planned for v1)
-
-| Feature | Reason |
-|---------|--------|
-| Group chats | Multi-party key agreement (MLS protocol) is a separate project |
-| Voice/video calls | WebRTC SRTP + SRTP key ratcheting requires media servers |
-| Read receipts | Privacy concern; conflicts with blind server architecture |
-| Typing indicators | Metadata leakage risk |
-| Push notifications | Requires Firebase/APNs integration (not zero-cost) |
-| User search / discovery | Server-side search conflicts with blind server |
-| File preview | Client-side preview requires sandboxed rendering engine |
-| Emoji reactions | Requires additional message mutation protocol |
+**Summary**: Whispr is a prototype of what is *possible* within these constraints, but it is not a production-ready "privacy fortress."

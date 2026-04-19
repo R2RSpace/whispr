@@ -13,34 +13,7 @@ import {
   VerifiedIcon, CloseIcon, ViewOnceIcon
 } from '../components/Icons';
 
-interface CRPResult {
-  action: 'BLOCK' | 'WARN' | 'ANNOTATE' | 'PASS';
-  reason: string | null;
-}
-
-function evaluateCRP(text: string): CRPResult {
-  const normalized = text.normalize('NFKC').replace(/[\u200B-\u200D\uFEFF\u00AD]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
-  for (const p of (constitution.principles as any[]).sort((a: any, b: any) => b.weight - a.weight)) {
-    let matchedKeywords: string[] = [];
-    let matchedPatterns: string[] = [];
-    for (const kw of (p.keywords || [])) {
-      if (normalized.includes(kw.toLowerCase())) matchedKeywords.push(kw);
-    }
-    for (const pattern of (p.patterns || [])) {
-      try { if (new RegExp(pattern, 'gi').test(normalized)) matchedPatterns.push(pattern); } catch {}
-    }
-    let score = 0;
-    if (matchedPatterns.length > 0) score += 0.7;
-    if (matchedKeywords.length > 0) score += Math.min(0.6, matchedKeywords.length * 0.15);
-    score = Math.min(1.0, score * (p.weight || 1));
-    if (score > (p.violation_threshold || 0.5)) {
-      if (p.enforcement_mode === 'BLOCK') return { action: 'BLOCK', reason: `Blocked by ${p.name}: message violates constitutional principle [${p.id}]` };
-      if (p.enforcement_mode === 'WARN') return { action: 'WARN', reason: `Warning from ${p.name}: ${p.description}` };
-      if (p.enforcement_mode === 'ANNOTATE') return { action: 'ANNOTATE', reason: `${p.name}: ${p.description}` };
-    }
-  }
-  return { action: 'PASS', reason: null };
-}
+import { filterMessage } from '../../worker/constitutional-ai';
 
 export default function ChatWindow({ onBack }: { onBack?: () => void }) {
   const { selectedChat, messages, addMessage, deleteMessage, clearChat, setShowContactInfo } = useApp();
@@ -87,7 +60,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
 
   const handleSend = useCallback(() => {
     if (!inputText.trim() || !selectedChat) return;
-    const crpResult = evaluateCRP(inputText);
+    const crpResult = filterMessage(inputText);
     if (crpResult.action === 'BLOCK') {
       setIsBlocked(true);
       setBlockReason(crpResult.reason || 'Message blocked by Constitutional AI');
@@ -222,7 +195,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         <div className="animate-fade-in" style={{ padding: 16, background: 'var(--md-sys-color-surface-container)', borderBottom: '1px solid var(--md-sys-color-outline-variant)', fontSize: 12, color: 'var(--md-sys-color-on-surface-variant)' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
             <span style={{ padding: '3px 8px', borderRadius: 12, background: 'var(--md-sys-color-primary-container)', color: 'var(--md-sys-color-on-primary-container)', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <LockIcon size={10} /> PQXDH + Triple Ratchet
+              <LockIcon size={10} /> E2EE (Double Ratchet)
             </span>
             <span style={{ padding: '3px 8px', borderRadius: 12, background: 'var(--md-sys-color-secondary-container)', color: 'var(--md-sys-color-on-secondary-container)', fontSize: 10 }}>Mailbox: {selectedChat.mailboxId}</span>
           </div>
@@ -233,7 +206,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ textAlign: 'center', padding: '8px 16px', margin: '0 auto 12px', background: 'var(--md-sys-color-surface-container)', borderRadius: 20, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-          <LockIcon size={12} /> Messages are end-to-end encrypted with post-quantum cryptography
+          <LockIcon size={12} /> Messages are end-to-end encrypted
         </div>
         {chatMessages.map((msg) => (
           <div key={msg.id} onContextMenu={(e) => handleContextMenu(e, msg)} style={{ display: 'flex', flexDirection: 'column' }}>

@@ -1,26 +1,20 @@
-# Constitution Implementation Details (v0.1-alpha)
+# Constitutional AI Implementation Transparency
 
-This document provides full transparency into how the Constitutional Review Pipeline (CRP) is currently implemented in Whispr.
+This document explains exactly how "Constitutional AI" works in the Whispr v0.1-alpha prototype. 
 
-## Architecture
+### 1. The Strategy: "Guardrail not Panopticon"
+The goal isn't to police private thoughts, but to provide a safety net against objective harms (Violence, CSAM, Doxxing). 
 
-Whispr is currently in an early prototype phase. The "Constitutional AI" layer is **not** a true semantic AI (like a local LLM or transformer model). It is currently a **rule-based engine** running in a background Web Worker (`src/client/workers/crp.worker.ts`).
+### 2. Current Engine: Rule-Based (Regex)
+Despite the "AI" label in common marketing, v0.1-alpha uses a **Rule-Based Engine**.
+-   **NFKC Canonicalization**: Text is normalized to catch homoglyph attacks (e.g., using Cyrillic 'а' instead of Latin 'a').
+-   **Regex Matching**: The engine checks the message against a list of patterns defined in `constitution.json`.
+-   **Levenshtein Distance (Planned)**: Future versions will include fuzzy matching for misspelled keywords.
 
-### Current Mechanisms
-1. **Keyword Matching**: Scans for exact hardcoded terms.
-2. **Regex Pattern Analysis**: Uses regular expressions to match specific harmful sentence structures.
-3. **NFKC Canonicalization**: Strips zero-width characters and resolves homoglyphs before scanning to prevent simple obfuscation (e.g. bypassing filters by replacing 'a' with an identical-looking Cyrillic 'а').
+### 3. Known Flaws
+-   **False Positives**: The filter may block non-harmful messages that happen to contain blacklisted strings in a different context.
+-   **False Negatives**: It is trivial to bypass a Regex filter with enough creativity or code obfuscation.
+-   **Privacy Trade-off**: The filter runs on the your device. Whispr never sees your raw text, but the code for the filter is public, meaning attackers also know exactly how to bypass it.
 
-### Why Not Real AI?
-Browser bundle size limitations (1MB max for fast Cloudflare Workers sync) and low-end mobile device constraints mean that deploying a quantized ML model (like ONNX runtime) is deferred to future versions. 
-
-## Known Weaknesses & Limitations
-
-We are explicitly documenting these so users do not have a false sense of security:
-
-* **High False Positive Rate**: Rule-based engines lack context. A user discussing a violent video game or quoting a news article containing the word "kill" may trigger the filter incorrectly.
-* **High False Negative Rate**: The filter does not understand nuance, slang, or complex metaphors. Bad actors can easily bypass the current filter using creative language or base64 encoding.
-* **Client-Side Vulnerabilities**: Because this filter runs client-side, a technically savvy malicious user could theoretically fork the code, patch out the Web Worker verification, and send harmful payloads. (Note: Receiver-side verification exists to catch this, but it requires the receiver to also be on a standard client).
-
-## Path Forward
-In `v2`, we plan to implement a lightweight embedding model using TensorFlow.js or ONNX Web to perform true semantic clustering, drastically reducing false positives and improving detection of nuanced hostility.
+### 4. Roadmap to "True AI"
+In v0.2, we plan to experiment with **ONNX Runtime Web** to run a distilled BERT or similar model locally within the Web Worker. This will provide true semantic understanding while maintaining the E2EE promise.

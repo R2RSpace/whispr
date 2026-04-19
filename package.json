@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Whispr — Constitutional secure messaging with E2EE and post-quantum cryptography",
+  "description": "Early prototype of honest E2EE messaging (v0.1-alpha). All advanced claims are planned only.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -13,8 +13,8 @@
     "db:init": "wrangler d1 execute Whispr-db --local --file=./src/worker/db/schema.sql"
   },
   "dependencies": {
-    "@noble/curves": "^1.8.1",
-    "@noble/hashes": "^1.7.1",
+    "@noble/curves": "^1.9.7",
+    "@noble/hashes": "^1.8.0",
     "@noble/post-quantum": "^0.2.1",
     "@scure/bip39": "^1.5.4",
     "hono": "^4.7.6",

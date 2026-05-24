@@ -25,7 +25,7 @@ export default function Profile() {
   };
 
   return (
-    <div style={{ height: '100vh', background: 'var(--md-sys-color-background)', display: 'flex', flexDirection: 'column' }}>
+    <div className="app-viewport" style={{ background: 'var(--md-sys-color-background)', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <div style={{
         padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12,

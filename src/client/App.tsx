@@ -79,6 +79,7 @@ interface AppState {
   blockUser: (chatId: string) => void;
   unblockUser: (chatId: string) => void;
   starMessage: (chatId: string, msgId: string) => void;
+  markViewOnceOpened: (chatId: string, msgId: string) => void;
   login: (userId: string, username: string, sessionId: string) => void;
   logout: () => void;
 }
@@ -214,6 +215,20 @@ export default function App() {
   }, [isLoggedIn, username]);
 
   const login = useCallback((uid: string, uname: string, sid: string) => {
+    const prevSession = LS.get('whispr_session');
+    if (prevSession?.username && prevSession.username !== uname) {
+      setChats([]);
+      setMessages({});
+      setBlockedUsers([]);
+      setSelectedChatRaw(null);
+      setShowProfile(false);
+      setShowContactInfo(false);
+      setSettingsView(null);
+      LS.set('whispr_chats', []);
+      LS.set('whispr_messages', {});
+      LS.set('whispr_blocked', []);
+      LS.set('whispr_profile', { ...DEFAULT_PROFILE, username: uname, displayName: uname });
+    }
     setUserId(uid); setUsername(uname); setSessionId(sid); setIsLoggedIn(true);
     LS.set('whispr_session', { userId: uid, username: uname, sessionId: sid });
     setProfile(prev => {
@@ -224,15 +239,32 @@ export default function App() {
 
   const logout = useCallback(() => {
     setIsLoggedIn(false); setUserId(null); setUsername(null); setSessionId(null);
-    setSelectedChatRaw(null); LS.del('whispr_session');
+    setSelectedChatRaw(null);
+    setIsMobileShowChat(false);
+    setShowProfile(false);
+    setShowContactInfo(false);
+    setSettingsView(null);
+    LS.del('whispr_session');
   }, []);
 
   const handleSelectChat = useCallback((chat: ChatItem | null) => {
     setSelectedChatRaw(chat);
-    if (chat) { setIsMobileShowChat(true); setChats(prev => prev.map(c => c.id === chat.id ? { ...c, unread: 0 } : c)); }
+    if (chat) { window.history.pushState({ whisprView: 'chat' }, ''); setIsMobileShowChat(true); setChats(prev => prev.map(c => c.id === chat.id ? { ...c, unread: 0 } : c)); }
   }, []);
 
   const handleBackToList = useCallback(() => { setIsMobileShowChat(false); setSelectedChatRaw(null); }, []);
+
+  useEffect(() => {
+    const onPopState = () => {
+      if (showContactInfo) { setShowContactInfo(false); return; }
+      if (settingsView) { setSettingsView(null); return; }
+      if (showProfile) { setShowProfile(false); return; }
+      if (isMobileShowChat) { setIsMobileShowChat(false); setSelectedChatRaw(null); return; }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [showContactInfo, settingsView, showProfile, isMobileShowChat]);
+
   const updateProfile = useCallback((p: Partial<UserProfile>) => setProfile(prev => ({ ...prev, ...p })), []);
 
   const addMessage = useCallback((chatId: string, msg: MessageItem) => {
@@ -289,9 +321,33 @@ export default function App() {
   const unblockUser = useCallback((chatId: string) => { setBlockedUsers(prev => prev.filter(id => id !== chatId)); setChats(prev => prev.map(c => c.id === chatId ? { ...c, blocked: false } : c)); }, []);
   const starMessage = useCallback((chatId: string, msgId: string) => { setMessages(prev => ({ ...prev, [chatId]: (prev[chatId] || []).map(m => m.id === msgId ? { ...m, starred: !m.starred } : m) })); }, []);
 
+  const markViewOnceOpened = useCallback((chatId: string, msgId: string) => {
+    setMessages(prev => ({
+      ...prev,
+      [chatId]: (prev[chatId] || []).map(m => m.id === msgId
+        ? { ...m, viewOnceOpened: true, photoUrl: undefined, text: m.text || '[View once photo opened]' }
+        : m),
+    }));
+  }, []);
+
+  const setShowProfileNav = useCallback((v: boolean) => {
+    if (v) window.history.pushState({ whisprView: 'profile' }, '');
+    setShowProfile(v);
+  }, []);
+
+  const setShowContactInfoNav = useCallback((v: boolean) => {
+    if (v) window.history.pushState({ whisprView: 'contact' }, '');
+    setShowContactInfo(v);
+  }, []);
+
+  const setSettingsViewNav = useCallback((v: SettingsView) => {
+    if (v) window.history.pushState({ whisprView: `settings:${v}` }, '');
+    setSettingsView(v);
+  }, []);
+
   const ctx: AppState = {
     isLoggedIn, userId, username, sessionId, profile, selectedChat, chats, messages, showProfile, showContactInfo, settingsView, blockedUsers,
-    setShowProfile, setShowContactInfo, setSettingsView, setSelectedChat: handleSelectChat, updateProfile, addMessage, deleteMessage, deleteMessages, clearChat, deleteChat, updateChat, blockUser, unblockUser, starMessage, login, logout,
+    setShowProfile: setShowProfileNav, setShowContactInfo: setShowContactInfoNav, setSettingsView: setSettingsViewNav, setSelectedChat: handleSelectChat, updateProfile, addMessage, deleteMessage, deleteMessages, clearChat, deleteChat, updateChat, blockUser, unblockUser, starMessage, markViewOnceOpened, login, logout,
   };
 
   if (!isLoggedIn) return <AppContext.Provider value={ctx}><Login /></AppContext.Provider>;
@@ -301,7 +357,7 @@ export default function App() {
 
   return (
     <AppContext.Provider value={ctx}>
-      <div style={{ display: 'flex', height: '100vh', width: '100%' }}>
+      <div className="app-viewport" style={{ display: 'flex', width: '100%' }}>
         <div className="desktop-only" style={{ width: 360, borderRight: '1px solid var(--md-sys-color-outline-variant)', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
           <ChatList />
         </div>

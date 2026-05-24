@@ -30,7 +30,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%', background: 'var(--md-sys-color-background)' }}>
+    <div className="app-viewport" style={{ display: 'flex', flexDirection: 'column', width: '100%', background: 'var(--md-sys-color-background)' }}>
       {/* Header */}
       <div style={{
         display: 'flex', alignItems: 'center', padding: '16px', gap: 16,

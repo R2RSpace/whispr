@@ -16,7 +16,7 @@ import {
 import { filterMessage } from '../../worker/constitutional-ai';
 
 export default function ChatWindow({ onBack }: { onBack?: () => void }) {
-  const { selectedChat, messages, addMessage, deleteMessage, clearChat, setShowContactInfo } = useApp();
+  const { selectedChat, messages, addMessage, deleteMessage, clearChat, setShowContactInfo, markViewOnceOpened } = useApp();
   const [inputText, setInputText] = useState('');
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockReason, setBlockReason] = useState('');
@@ -210,7 +210,7 @@ export default function ChatWindow({ onBack }: { onBack?: () => void }) {
         </div>
         {chatMessages.map((msg) => (
           <div key={msg.id} onContextMenu={(e) => handleContextMenu(e, msg)} style={{ display: 'flex', flexDirection: 'column' }}>
-            <MessageBubble msg={msg} onReply={(m) => setReplyingTo(m)} onViewOnce={() => { if (msg.viewOnce && !msg.viewOnceOpened && selectedChat) {} }} />
+            <MessageBubble msg={msg} onReply={(m) => setReplyingTo(m)} onViewOnce={() => { if (msg.viewOnce && !msg.viewOnceOpened && selectedChat) { markViewOnceOpened(selectedChat.id, msg.id); } }} />
           </div>
         ))}
         <div ref={messagesEndRef} />

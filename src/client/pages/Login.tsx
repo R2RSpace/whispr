@@ -132,6 +132,7 @@ export default function Login() {
           setMnemonic(words.real);
           setMnemonicDuress(words.duress);
           setConfirmIndices(getRandomIndices());
+          window.history.pushState({ whisprView: 'mnemonic' }, '');
           setShowMnemonic(true);
         } else {
           const errJSON = await res.json().catch(() => ({}));
@@ -191,11 +192,27 @@ export default function Login() {
     }
   };
 
+
+  useEffect(() => {
+    const onPopState = () => {
+      if (showMnemonic) {
+        setShowMnemonic(false);
+        return;
+      }
+      if (isSignUp) {
+        setIsSignUp(false);
+        setError('');
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [isSignUp, showMnemonic]);
+
   // Mnemonic display screen
   if (showMnemonic && !mnemonicConfirmed) {
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--md-sys-color-background)', padding: 24 }}>
-        <div className="glass-card animate-fade-in" style={{ maxWidth: 520, width: '100%', padding: 32 }}>
+      <div className="app-viewport" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', background: 'var(--md-sys-color-background)', padding: '24px 16px 40px', overflowY: 'auto' }}>
+        <div className="glass-card animate-fade-in" style={{ maxWidth: 520, width: '100%', padding: 24, margin: 'auto 0' }}>
           <h2 style={{ fontSize: 22, fontWeight: 500, marginBottom: 8, color: 'var(--md-sys-color-on-surface)' }}>
             🔐 Recovery Phrases
           </h2>
@@ -212,7 +229,7 @@ export default function Login() {
               borderRadius: 12,
               padding: 16,
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
               gap: 8,
               fontSize: 13,
               fontFamily: 'monospace',
@@ -235,7 +252,7 @@ export default function Login() {
               borderRadius: 12,
               padding: 16,
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
               gap: 8,
               fontSize: 13,
               fontFamily: 'monospace',
@@ -253,9 +270,9 @@ export default function Login() {
             <p style={{ fontSize: 13, color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 12 }}>
               Confirm words #{confirmIndices.map(i => i + 1).join(', #')} from your Primary Phrase:
             </p>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {confirmIndices.map((idx, i) => (
-                <div key={i} style={{ flex: 1 }}>
+                <div key={i} style={{ flex: '1 1 140px' }}>
                   <label style={{ fontSize: 11, color: 'var(--md-sys-color-outline)', marginBottom: 4, display: 'block' }}>
                     Word #{idx + 1}
                   </label>
@@ -286,7 +303,7 @@ export default function Login() {
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', position: 'relative', overflow: 'hidden' }}>
+    <div className="app-viewport" style={{ display: 'flex', position: 'relative', overflowX: 'hidden', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
       <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
       
       <div style={{
@@ -294,11 +311,12 @@ export default function Login() {
         zIndex: 1,
         flex: 1,
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: 24,
+        padding: '24px 16px 40px',
+        overflowY: 'auto',
       }}>
-        <div className="glass-card animate-fade-in" style={{ maxWidth: 420, width: '100%', padding: 40 }}>
+        <div className="glass-card animate-fade-in" style={{ maxWidth: 420, width: '100%', padding: 24, margin: 'auto 0' }}>
           {/* Logo */}
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <div style={{
@@ -426,7 +444,7 @@ export default function Login() {
                 fontSize: 14,
                 fontFamily: 'var(--font-family)',
               }}
-              onClick={() => { setIsSignUp(!isSignUp); setError(''); }}
+              onClick={() => { window.history.pushState({ whisprView: isSignUp ? 'signin' : 'signup' }, ''); setIsSignUp(!isSignUp); setError(''); }}
             >
               {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
             </button>

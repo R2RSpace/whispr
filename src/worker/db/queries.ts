@@ -122,7 +122,10 @@ export async function createUser(db: D1Database, user: Omit<DBUser, 'status'>): 
 }
 
 export async function getSessionsByUser(db: D1Database, userId: string): Promise<DBSession[]> {
-  const result = await db.prepare('SELECT * FROM sessions WHERE user_id = ?').bind(userId).all<DBSession>();
+  const now = Date.now();
+  const result = await db.prepare(
+    'SELECT * FROM sessions WHERE user_id = ? AND expires_at > ? ORDER BY last_seen DESC'
+  ).bind(userId, now).all<DBSession>();
   return result.results || [];
 }
 

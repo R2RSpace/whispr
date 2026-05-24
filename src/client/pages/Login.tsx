@@ -194,7 +194,7 @@ export default function Login() {
   // Mnemonic display screen
   if (showMnemonic && !mnemonicConfirmed) {
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--md-sys-color-background)', padding: 24 }}>
+      <div className="app-viewport" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--md-sys-color-background)', padding: 24, overflowY: 'auto' }}>
         <div className="glass-card animate-fade-in" style={{ maxWidth: 520, width: '100%', padding: 32 }}>
           <h2 style={{ fontSize: 22, fontWeight: 500, marginBottom: 8, color: 'var(--md-sys-color-on-surface)' }}>
             🔐 Recovery Phrases
@@ -212,7 +212,7 @@ export default function Login() {
               borderRadius: 12,
               padding: 16,
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
               gap: 8,
               fontSize: 13,
               fontFamily: 'monospace',
@@ -235,7 +235,7 @@ export default function Login() {
               borderRadius: 12,
               padding: 16,
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
               gap: 8,
               fontSize: 13,
               fontFamily: 'monospace',
@@ -286,7 +286,7 @@ export default function Login() {
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', position: 'relative', overflow: 'hidden' }}>
+    <div className="app-viewport" style={{ display: 'flex', position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
       <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
       
       <div style={{

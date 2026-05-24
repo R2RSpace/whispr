@@ -10,7 +10,7 @@ export default function ContactInfo() {
   if (!selectedChat) return null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%', background: 'var(--md-sys-color-surface)' }}>
+    <div className="app-viewport" style={{ display: 'flex', flexDirection: 'column', width: '100%', background: 'var(--md-sys-color-surface)' }}>
       <div style={{ display: 'flex', alignItems: 'center', padding: '16px', gap: 16, borderBottom: '1px solid var(--md-sys-color-outline-variant)' }}>
         <button onClick={() => setShowContactInfo(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
           <BackIcon size={24} color="var(--md-sys-color-on-surface)" />

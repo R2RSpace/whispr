@@ -301,7 +301,7 @@ export default function App() {
 
   return (
     <AppContext.Provider value={ctx}>
-      <div style={{ display: 'flex', height: '100vh', width: '100%' }}>
+      <div className="app-viewport" style={{ display: 'flex', width: '100%' }}>
         <div className="desktop-only" style={{ width: 360, borderRight: '1px solid var(--md-sys-color-outline-variant)', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
           <ChatList />
         </div>
